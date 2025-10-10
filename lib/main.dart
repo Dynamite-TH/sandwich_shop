@@ -4,12 +4,18 @@ void main() {
   runApp(const App());
 }
 
- class App extends StatelessWidget {
-   const App({super.key});
+class App extends StatelessWidget {
+  const App({super.key});
 
-   @override
+  @override
   Widget build(BuildContext context) {
-    return Container();
+    return MaterialApp(
+      title: 'My Sandwich Shop',
+      home: Scaffold(
+        appBar: AppBar(title: const Text('Sandwich Counter')),
+        body: const Center(child: Text('Welcome to My Sandwich Shop!')),
+      ),
+    );
   }
 }
 
@@ -41,7 +47,7 @@ class _MyHomePageState extends State<MyHomePage> {
       // so that the display can reflect the updated values. If we changed
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
-    // _counter++;
+      // _counter++;
     });
   }
 
