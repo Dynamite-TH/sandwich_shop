@@ -13,14 +13,13 @@ class App extends StatelessWidget {
       title: 'My Sandwich Shop',
       home: Scaffold(
         appBar: AppBar(title: const Text('Sandwich Counter')),
-        body: const Center(child: Text('Welcome to My Sandwich Shop!')),
-
+        body: const Center(child: OrderItemDisplay(5, 'Footlong')),
       ),
     );
   }
 }
 
-class orderItemDisplay extends StatelessWidget {
+class OrderItemDisplay extends StatelessWidget {
   final String itemType;
   final int quantity;
 
@@ -31,9 +30,6 @@ class orderItemDisplay extends StatelessWidget {
     return Text('$quantity $itemType sandwich(es): ${'🥪' * quantity}');
   }
 }
-
-
-
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
