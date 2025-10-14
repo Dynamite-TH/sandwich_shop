@@ -1,100 +1,39 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const App());
+  runApp(const MyApp());
 }
 
-class App extends StatelessWidget {
-  const App({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
+  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'My Sandwich Shop',
+      title: 'Sandwich Shop App',
       home: Scaffold(
-        appBar: AppBar(title: const Text('Sandwich Counter')),
-        body: Center(
-          // child: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8.0),
-                  // alignment: Alignment.center,
-                  color: Colors.blue,
-                  child: OrderItemDisplay(5, 'Club'),
-                ),
-                Container(
-                  padding: const EdgeInsets.all(8.0),
-                  color: Colors.orange,
-                  child: OrderItemDisplay(3, 'BLT'),
-                ),
-                Container(
-                  padding: const EdgeInsets.all(8.0),
-                  color: Colors.green,
-                  child: OrderItemDisplay(2, 'Veggie'),
-                ),
-                // Container(
-                //   padding: EdgeInsets.all(8.0),
-                //   color: Colors.red,
-                //   child: OrderItemDisplay(6, 'Ham'),
-                // ),
-                // Container(
-                //   padding: EdgeInsets.all(8.0),
-                //   color: Colors.yellow,
-                //   child: OrderItemDisplay(9, 'Turkey'),
-                // ),
-                // Container(
-                //   padding: EdgeInsets.all(8.0),
-                //   color: Colors.purple,
-                //   child: OrderItemDisplay(1, 'Chicken'),
-                // ),
-                // Container(
-                //   padding: EdgeInsets.all(8.0),
-                //   color: Colors.pink,
-                //   child: OrderItemDisplay(5, 'Jam'),
-                // ),
-                // Container(
-                //   padding: EdgeInsets.all(8.0),
-                //   color: Colors.red,
-                //   child: OrderItemDisplay(6, 'Ham'),
-                // ),
-                // Container(
-                //   padding: EdgeInsets.all(8.0),
-                //   color: Colors.red,
-                //   child: OrderItemDisplay(6, 'Ham'),
-                // ),
-                // Container(
-                //   padding: EdgeInsets.all(8.0),
-                //   color: Colors.red,
-                //   child: OrderItemDisplay(6, 'Ham'),
-                // ),
-              ],
-            ),
+        appBar: AppBar(title: const Text('Sandwich counter')),
+        body: const Center(
+          child: Text('Welcome to my sandwich shop!')
           ),
-        ),
-      );
-  }
-}
-
-class OrderItemDisplay extends StatelessWidget {
-  final String itemType;
-  final int quantity;
-
-  const OrderItemDisplay(this.quantity, this.itemType, {super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      '$quantity $itemType sandwiches: ${'🥪' * quantity}',
-      style: const TextStyle(fontSize: 20, color: Colors.white),
+      )
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
+
+  // This widget is the home page of your application. It is stateful, meaning
+  // that it has a State object (defined below) that contains fields that affect
+  // how it looks.
+
+  // This class is the configuration for the state. It holds the values (in this
+  // case the title) provided by the parent (in this case the App widget) and
+  // used by the build method of the State. Fields in a Widget subclass are
+  // always marked "final".
+
   final String title;
 
   @override
@@ -111,7 +50,7 @@ class _MyHomePageState extends State<MyHomePage> {
       // so that the display can reflect the updated values. If we changed
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
-      // _counter++;
+      //_counter++;
     });
   }
 
@@ -152,7 +91,7 @@ class _MyHomePageState extends State<MyHomePage> {
           // wireframe for each widget.
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text('Welcome to My Sandwich Shop!'),
+            const Text('Welcome to my sandwich shop!'),
             // Text(
             //   '$_counter',
             //   style: Theme.of(context).textTheme.headlineMedium,
