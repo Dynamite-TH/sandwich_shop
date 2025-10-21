@@ -45,7 +45,11 @@ class _OrderScreenState extends State<OrderScreen> {
 
   void addModifications() {
     if (_modifications.isNotEmpty) {
-      print('Modifications: $_modifications');
+      setState(() {
+        _modifications = _modifications;
+        _increaseQuantity();
+
+      });
     }
   }
 
@@ -102,6 +106,7 @@ class _OrderScreenState extends State<OrderScreen> {
                   ),
                   child: const Text('Add Modifications'),
                 ),
+                
               ],
             ),
           ],
