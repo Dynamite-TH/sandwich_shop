@@ -29,6 +29,7 @@ class OrderScreen extends StatefulWidget {
 
 class _OrderScreenState extends State<OrderScreen> {
   int _quantity = 0;
+  String _modifications = '';
 
   void _increaseQuantity() {
     if (_quantity < widget.maxQuantity) {
@@ -42,6 +43,12 @@ class _OrderScreenState extends State<OrderScreen> {
     }
   }
 
+  void addModifications() {
+    if (_modifications.isNotEmpty) {
+      print('Modifications: $_modifications');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -51,16 +58,49 @@ class _OrderScreenState extends State<OrderScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             OrderItemDisplay(_quantity, 'Footlong'),
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 8.0,
+              ),
+              child: TextField(
+                onChanged: (value) {
+                  setState(() {
+                    _modifications = value;
+                  });
+                },
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: 'Special Instructions',
+                ),
+              ),
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 ElevatedButton(
                   onPressed: _increaseQuantity,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                  ),
                   child: const Text('Add'),
                 ),
                 ElevatedButton(
                   onPressed: _decreaseQuantity,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                  ),
                   child: const Text('Remove'),
+                ),
+                ElevatedButton(
+                  onPressed: addModifications,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text('Add Modifications'),
                 ),
               ],
             ),
