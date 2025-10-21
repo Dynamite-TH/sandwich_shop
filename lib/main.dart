@@ -15,66 +15,66 @@ class App extends StatelessWidget {
         appBar: AppBar(title: const Text('Sandwich Counter')),
         body: Center(
           // child: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8.0),
-                  // alignment: Alignment.center,
-                  color: Colors.blue,
-                  child: OrderItemDisplay(5, 'Club'),
-                ),
-                Container(
-                  padding: const EdgeInsets.all(8.0),
-                  color: Colors.orange,
-                  child: OrderItemDisplay(3, 'BLT'),
-                ),
-                Container(
-                  padding: const EdgeInsets.all(8.0),
-                  color: Colors.green,
-                  child: OrderItemDisplay(2, 'Veggie'),
-                ),
-                // Container(
-                //   padding: EdgeInsets.all(8.0),
-                //   color: Colors.red,
-                //   child: OrderItemDisplay(6, 'Ham'),
-                // ),
-                // Container(
-                //   padding: EdgeInsets.all(8.0),
-                //   color: Colors.yellow,
-                //   child: OrderItemDisplay(9, 'Turkey'),
-                // ),
-                // Container(
-                //   padding: EdgeInsets.all(8.0),
-                //   color: Colors.purple,
-                //   child: OrderItemDisplay(1, 'Chicken'),
-                // ),
-                // Container(
-                //   padding: EdgeInsets.all(8.0),
-                //   color: Colors.pink,
-                //   child: OrderItemDisplay(5, 'Jam'),
-                // ),
-                // Container(
-                //   padding: EdgeInsets.all(8.0),
-                //   color: Colors.red,
-                //   child: OrderItemDisplay(6, 'Ham'),
-                // ),
-                // Container(
-                //   padding: EdgeInsets.all(8.0),
-                //   color: Colors.red,
-                //   child: OrderItemDisplay(6, 'Ham'),
-                // ),
-                // Container(
-                //   padding: EdgeInsets.all(8.0),
-                //   color: Colors.red,
-                //   child: OrderItemDisplay(6, 'Ham'),
-                // ),
-              ],
-            ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8.0),
+                // alignment: Alignment.center,
+                color: Colors.blue,
+                child: OrderItemDisplay(5, 'Club'),
+              ),
+              Container(
+                padding: const EdgeInsets.all(8.0),
+                color: Colors.orange,
+                child: OrderItemDisplay(3, 'BLT'),
+              ),
+              Container(
+                padding: const EdgeInsets.all(8.0),
+                color: Colors.green,
+                child: OrderItemDisplay(2, 'Veggie'),
+              ),
+              // Container(
+              //   padding: EdgeInsets.all(8.0),
+              //   color: Colors.red,
+              //   child: OrderItemDisplay(6, 'Ham'),
+              // ),
+              // Container(
+              //   padding: EdgeInsets.all(8.0),
+              //   color: Colors.yellow,
+              //   child: OrderItemDisplay(9, 'Turkey'),
+              // ),
+              // Container(
+              //   padding: EdgeInsets.all(8.0),
+              //   color: Colors.purple,
+              //   child: OrderItemDisplay(1, 'Chicken'),
+              // ),
+              // Container(
+              //   padding: EdgeInsets.all(8.0),
+              //   color: Colors.pink,
+              //   child: OrderItemDisplay(5, 'Jam'),
+              // ),
+              // Container(
+              //   padding: EdgeInsets.all(8.0),
+              //   color: Colors.red,
+              //   child: OrderItemDisplay(6, 'Ham'),
+              // ),
+              // Container(
+              //   padding: EdgeInsets.all(8.0),
+              //   color: Colors.red,
+              //   child: OrderItemDisplay(6, 'Ham'),
+              // ),
+              // Container(
+              //   padding: EdgeInsets.all(8.0),
+              //   color: Colors.red,
+              //   child: OrderItemDisplay(6, 'Ham'),
+              // ),
+            ],
           ),
         ),
-      );
+      ),
+    );
   }
 }
 
