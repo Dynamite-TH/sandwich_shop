@@ -7,35 +7,11 @@ void main() {
 class App extends StatelessWidget {
   const App({super.key});
 
-  @override
+   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'My Sandwich Shop',
-      home: Scaffold(
-        appBar: AppBar(title: const Text('Sandwich Counter')),
-        // The bit that you need to update starts from here
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const OrderItemDisplay(5, 'Footlong'),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton(
-                    onPressed: () => print('Add button pressed!'),
-                    child: const Text('Add'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () => print('Remove button pressed!'),
-                    child: const Text('Remove'),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
+    return const MaterialApp(
+      title: 'Sandwich Shop App',
+      home: OrderScreen(maxQuantity: 5),
     );
   }
 }
