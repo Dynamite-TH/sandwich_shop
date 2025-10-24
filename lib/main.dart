@@ -16,10 +16,12 @@ class App extends StatelessWidget {
   }
 }
 
+enum SandwichSize { footlong, sixInch }
+
 class OrderScreen extends StatefulWidget {
   final int maxQuantity;
 
-  const OrderScreen({super.key, this.maxQuantity = 10});
+  const OrderScreen({super.key, this.maxQuantity = 20});
 
   @override
   State<OrderScreen> createState() {
@@ -29,61 +31,101 @@ class OrderScreen extends StatefulWidget {
 
 class _OrderScreenState extends State<OrderScreen> {
   int _quantity = 0;
-  String _modifications = '';
+  final TextEditingController _noteController = TextEditingController();
+  final List<String> _modifications = []; // one entry per added sandwich
+  SandwichSize _selectedSize = SandwichSize.footlong;
 
   void _increaseQuantity() {
-    if (_quantity < widget.maxQuantity) {
-      setState(() => _quantity++);
-    }
+    if (_quantity >= widget.maxQuantity) return;
+    final note = _noteController.text.trim();
+    setState(() {
+      _quantity++;
+      _modifications.add(note); // keep alignment: even empty note is stored
+      _noteController.clear();
+    });
   }
 
   void _decreaseQuantity() {
-    if (_quantity > 0) {
-      setState(() => _quantity--);
-    }
+    if (_quantity <= 0) return;
+    setState(() {
+      _quantity--;
+      if (_modifications.isNotEmpty) _modifications.removeLast();
+    });
   }
 
-  void addModifications() {
-    if (_modifications.isNotEmpty) {
-      setState(() {
-        _modifications = _modifications;
-        _increaseQuantity();
+  @override
+  void dispose() {
+    _noteController.dispose();
+    super.dispose();
+  }
 
-      });
-    }
+  void _decreaseAllQuantity() {
+    setState(() {
+      _quantity = 0;
+      _modifications.clear();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final itemLabel = _selectedSize == SandwichSize.footlong
+        ? 'Footlong'
+        : 'Six-inch';
     return Scaffold(
       appBar: AppBar(title: const Text('Sandwich Counter')),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            OrderItemDisplay(_quantity, 'Footlong'),
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 8.0,
+              ),
+              child: SegmentedButton<SandwichSize>(
+                segments: const <ButtonSegment<SandwichSize>>[
+                  ButtonSegment(
+                    value: SandwichSize.footlong,
+                    label: Text('Footlong'),
+                  ),
+                  ButtonSegment(
+                    value: SandwichSize.sixInch,
+                    label: Text('Six-inch'),
+                  ),
+                ],
+                selected: <SandwichSize>{_selectedSize},
+                onSelectionChanged: (Set<SandwichSize> newSelection) {
+                  if (newSelection.isNotEmpty) {
+                    setState(() {
+                      _selectedSize = newSelection.first;
+                    });
+                  }
+                },
+              ),
+            ),
+            OrderItemDisplay(_quantity, itemLabel),
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: 24.0,
                 vertical: 8.0,
               ),
               child: TextField(
-                onChanged: (value) {
-                  setState(() {
-                    _modifications = value;
-                  });
-                },
+                controller: _noteController,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   labelText: 'Special Instructions',
+                  hintText: 'e.g., No pickles, extra mayo',
                 ),
               ),
             ),
+
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 ElevatedButton(
-                  onPressed: _increaseQuantity,
+                  onPressed: (_quantity >= widget.maxQuantity)
+                      ? null
+                      : _increaseQuantity,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     foregroundColor: Colors.white,
@@ -91,22 +133,25 @@ class _OrderScreenState extends State<OrderScreen> {
                   child: const Text('Add'),
                 ),
                 ElevatedButton(
-                  onPressed: _decreaseQuantity,
+                  onPressed: (_quantity <= 0) ? null : _decreaseQuantity,
+                  onLongPress: (_quantity > 0) ? _decreaseAllQuantity : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red,
                     foregroundColor: Colors.white,
                   ),
                   child: const Text('Remove'),
                 ),
-                ElevatedButton(
-                  onPressed: addModifications,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: 300,
+                  child: Text(
+                    _modifications.where((s) => s.isNotEmpty).join(', '),
                   ),
-                  child: const Text('Add Modifications'),
                 ),
-                
               ],
             ),
           ],
