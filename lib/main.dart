@@ -38,6 +38,7 @@ class _OrderScreenState extends State<OrderScreen> {
   final TextEditingController _notesController = TextEditingController();
   bool _isFootlong = true;
   BreadType _selectedBreadType = BreadType.white;
+  bool _isToasted = false;
 
   @override
   void initState() {
@@ -64,6 +65,7 @@ class _OrderScreenState extends State<OrderScreen> {
   VoidCallback? _getDecreaseCallback() {
     if (_orderRepository.canDecrement) {
       return () => setState(_orderRepository.decrement);
+
     }
     return null;
   }
@@ -115,18 +117,35 @@ class _OrderScreenState extends State<OrderScreen> {
               itemType: sandwichType,
               breadType: _selectedBreadType,
               orderNote: noteForDisplay,
+              isToasted: _isToasted,
+              price: PricingRepository().calculatePrice(_orderRepository.quantity, _isFootlong),
             ),
             const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Text('six-inch', style: normalText),
-                Switch(value: _isFootlong, onChanged: _onSandwichTypeChanged),
+                Switch(value: _isFootlong, onChanged: _onSandwichTypeChanged, key: const Key('SandwichTypeChanged')),
                 const Text('footlong', style: normalText),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text('Untoasted', style: normalText),
+                Switch(
+                  value: _isToasted,
+                  onChanged: (value) {
+                    setState(() => _isToasted = value);
+                  },
+                  key: const Key('ToastedSwitch'),
+                ),
+                const Text('Toasted', style: normalText),
               ],
             ),
             const SizedBox(height: 10),
             DropdownMenu<BreadType>(
+              key: const Key('bread_type_dropdown'),
               textStyle: normalText,
               initialSelection: _selectedBreadType,
               onSelected: _onBreadTypeSelected,
@@ -193,23 +212,18 @@ class StyledButton extends StatelessWidget {
     return ElevatedButton(
       onPressed: onPressed,
       style: myButtonStyle,
-      child: Row(
-        children: [
-          Icon(icon),
-          const SizedBox(width: 8),
-          Text(label),
-        ],
-      ),
+      child: Row(children: [Icon(icon), const SizedBox(width: 8), Text(label)]),
     );
   }
 }
-
 
 class OrderItemDisplay extends StatelessWidget {
   final int quantity;
   final String itemType;
   final BreadType breadType;
   final String orderNote;
+  final bool isToasted;
+  final double price;
 
   const OrderItemDisplay({
     super.key,
@@ -217,25 +231,30 @@ class OrderItemDisplay extends StatelessWidget {
     required this.itemType,
     required this.breadType,
     required this.orderNote,
+    required this.isToasted,
+    required this.price,
   });
 
   @override
   Widget build(BuildContext context) {
     final safeQuantity = quantity.clamp(0, 100);
     final emoji = List.filled(safeQuantity, '🥪').join();
+    final String toastStatus = isToasted ? 'toasted' : 'untoasted';
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          '$quantity ${breadType.name} $itemType sandwich(es): $emoji',
+          '$quantity ${breadType.name} $toastStatus $itemType sandwich(es): $emoji \nTotal Price: \$${price.toStringAsFixed(2)}',
           style: const TextStyle(fontSize: 20),
         ),
         const SizedBox(height: 6),
         Text('Bread: ${breadType.name}'),
         const SizedBox(height: 4),
-        Text(orderNote.isEmpty ? 'No notes added.' : 'Note: $orderNote',
-            style: const TextStyle(fontStyle: FontStyle.italic)),
+        Text(
+          orderNote.isEmpty ? 'No notes added.' : 'Note: $orderNote',
+          style: const TextStyle(fontStyle: FontStyle.italic),
+        ),
       ],
     );
   }
- }
+}
