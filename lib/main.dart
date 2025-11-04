@@ -227,7 +227,7 @@ class OrderItemDisplay extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          '$quantity $itemType sandwiches: $emoji',
+          '$quantity ${breadType.name} $itemType sandwich(es): $emoji',
           style: const TextStyle(fontSize: 20),
         ),
         const SizedBox(height: 6),
