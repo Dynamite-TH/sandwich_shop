@@ -244,11 +244,14 @@ class OrderItemDisplay extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          '$quantity ${breadType.name} $toastStatus $itemType sandwich(es): $emoji \nTotal Price: \$${price.toStringAsFixed(2)}',
+          '$quantity ${breadType.name} $itemType sandwich(es): $emoji',
           style: const TextStyle(fontSize: 20),
         ),
+        const SizedBox(height: 10),
+        Text('Price: \$${price.toStringAsFixed(2)}'),
         const SizedBox(height: 6),
         Text('Bread: ${breadType.name}'),
+        Text('Type: $toastStatus'),
         const SizedBox(height: 4),
         Text(
           orderNote.isEmpty ? 'No notes added.' : 'Note: $orderNote',
