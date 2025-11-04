@@ -35,4 +35,17 @@ void main() {
       expect(repository.quantity, 0);
     });
   });
+  group('PricingRepository', () {
+    test('calculates price for six-inch sandwiches', () {
+      final pricing = PricingRepository(sixInchPrice: 7.0, footlongPrice: 11.0);
+      final price = pricing.calculatePrice(3, false); // 3 six-inch sandwiches
+      expect(price, 21.0);
+    });
+
+    test('calculates price for footlong sandwiches', () {
+      final pricing = PricingRepository(sixInchPrice: 7.0, footlongPrice: 11.0);
+      final price = pricing.calculatePrice(2, true); // 2 footlong sandwiches
+      expect(price, 22.0);
+    });
+  });
 }
