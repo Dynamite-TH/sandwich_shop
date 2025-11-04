@@ -88,6 +88,24 @@ void main() {
       await tester.pump();
       expect(find.text('Note: Extra mayo'), findsOneWidget);
     });
+
+    testWidgets('toggles sandwich size with Switch',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(const App());
+      expect(find.textContaining('footlong sandwich'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('SandwichTypeChanged')));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('six-inch sandwich'), findsOneWidget);
+    });
+
+    testWidgets('toggles toasted option with Switch',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(const App());
+      expect(find.textContaining('Untoasted'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('ToastedSwitch')));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Toasted'), findsOneWidget);
+    });
   });
 
   group('StyledButton', () {
@@ -116,6 +134,8 @@ void main() {
         itemType: 'footlong',
         breadType: BreadType.white,
         orderNote: 'No notes added.',
+        isToasted: false,
+        price: 0.0,
       );
       const testApp = MaterialApp(
         home: Scaffold(body: widgetToBeTested),
@@ -132,6 +152,8 @@ void main() {
         itemType: 'footlong',
         breadType: BreadType.white,
         orderNote: 'No notes added.',
+        isToasted: false,
+        price: 33.0,
       );
       const testApp = MaterialApp(
         home: Scaffold(body: widgetToBeTested),
@@ -149,6 +171,8 @@ void main() {
         itemType: 'six-inch',
         breadType: BreadType.wheat,
         orderNote: 'No pickles',
+        isToasted: false,
+        price: 14.0,
       );
       const testApp = MaterialApp(
         home: Scaffold(body: widgetToBeTested),
@@ -165,6 +189,8 @@ void main() {
         itemType: 'footlong',
         breadType: BreadType.wholemeal,
         orderNote: 'Lots of lettuce',
+        isToasted: false,
+        price: 11.0,
       );
       const testApp = MaterialApp(
         home: Scaffold(body: widgetToBeTested),
