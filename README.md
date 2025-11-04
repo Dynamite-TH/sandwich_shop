@@ -121,6 +121,5 @@ Contribution guidelines
 ---
 
 **6. Contact Information**
-- Project owner: (replace with your name)
-- Contact: (replace with your email or GitHub profile link)
-- Additional projects / profiles: (add links if desired)
+- Project owner: Teddy Hayward
+- Contact: tedhayward@icloud.com
