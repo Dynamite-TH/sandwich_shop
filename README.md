@@ -40,7 +40,7 @@ flutter run
 ```bash
 flutter run -d windows
 ```
-- From VS Code / Android Studio: open the project folder, select a device, press Run or Debug.
+- From VS Code / Android Studio: open the project folder, select a device, press Run or Debug or in Terminal write 'flutter run'.
 
 Notes:
 - If you change widget constructors or state, do a full restart (not only hot reload) to avoid initialization issues with SegmentedButton selection or controllers.
