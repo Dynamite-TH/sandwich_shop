@@ -90,7 +90,13 @@ class _OrderScreenState extends State<OrderScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Sandwich Counter', style: heading1)),
+      appBar: AppBar(
+        leading: SizedBox(
+          height: 100,
+          child: Image.asset('assets/images/logo.png'),
+        ),
+        title: const Text('Sandwich Counter', style: heading1),
+      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -101,14 +107,21 @@ class _OrderScreenState extends State<OrderScreen> {
               breadType: _selectedBreadType,
               orderNote: noteForDisplay,
               isToasted: _isToasted,
-              price: PricingRepository().calculatePrice(_orderRepository.quantity, _isFootlong),
+              price: PricingRepository().calculatePrice(
+                _orderRepository.quantity,
+                _isFootlong,
+              ),
             ),
             const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Text('six-inch', style: normalText),
-                Switch(value: _isFootlong, onChanged: _onSandwichTypeChanged, key: const Key('SandwichTypeChanged')),
+                Switch(
+                  value: _isFootlong,
+                  onChanged: _onSandwichTypeChanged,
+                  key: const Key('SandwichTypeChanged'),
+                ),
                 const Text('footlong', style: normalText),
               ],
             ),
