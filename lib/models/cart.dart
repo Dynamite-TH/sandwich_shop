@@ -68,7 +68,8 @@ class Cart extends ChangeNotifier {
 
   final List<OrderItem> _items = [];
 
-  Cart({required this.pricingRepo, this.toastedFee = 0.25});
+  Cart({PricingRepository? pricingRepo, this.toastedFee = 0.25})
+    : pricingRepo = pricingRepo ?? PricingRepository();
 
   List<OrderItem> get items => List.unmodifiable(_items);
 
