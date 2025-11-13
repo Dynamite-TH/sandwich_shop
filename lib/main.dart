@@ -24,14 +24,14 @@ class CartView extends StatelessWidget {
         if (items.isEmpty) {
           return const Center(
             child: Padding(
-              padding: EdgeInsets.all(16),
+              padding: EdgeInsets.all(8),
               child: Text('Your cart is empty', textAlign: TextAlign.center),
             ),
           );
         }
 
         return ListView.separated(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(30),
           itemCount: items.length,
           separatorBuilder: (_, __) => const Divider(),
           itemBuilder: (context, index) {
@@ -48,139 +48,185 @@ class CartView extends StatelessWidget {
 
             final imagePath = _assetPath(sandwich.image);
 
-            return ListTile(
-              contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-               isThreeLine: true,
-              leading: ClipRRect(
-                borderRadius: BorderRadius.circular(6),
-                child: Image.asset(
-                  imagePath,
-                  width: 30,
-                  height: 30,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) =>
-                      const Icon(Icons.fastfood, size: 10),
-                ),
+            return Card(
+              margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
-              title: Text('${item.quantity} × ${sandwich.name}'),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    sandwich.isFootlong
-                        ? 'Footlong • ${sandwich.breadType.name}'
-                        : '6-inch • ${sandwich.breadType.name}',
-                  ),
-                  if (item.isToasted)
-                    const Text(
-                      'Toasted',
-                      style: TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                  if (item.note.isNotEmpty)
-                    Text(
-                      'Note: ${item.note}',
-                      style: const TextStyle(fontStyle: FontStyle.italic),
-                    ),
-                ],
-              ),
-              trailing: SizedBox(
-                width: 140,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      _formatPrice(unitPrice),
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    Text(_formatPrice(totalPrice)),
-                    const SizedBox(height: 0),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.remove_circle_outline),
-                          tooltip: 'Decrease',
-                          onPressed: () => cart.decreaseQuantity(item.id),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () {
+                  // reuse existing edit sheet code
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    builder: (ctx) {
+                      final qtyController = TextEditingController(
+                        text: item.quantity.toString(),
+                      );
+                      final noteController = TextEditingController(
+                        text: item.note,
+                      );
+                      bool toasted = item.isToasted;
+                      String toastedValue;
+                      if (toasted == true) {
+                        toastedValue = "Toasted";
+                      } else {
+                        toastedValue = "Untoasted";
+                      }
+                      return Padding(
+                        padding: EdgeInsets.only(
+                          bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
+                          left: 16,
+                          right: 16,
+                          top: 16,
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.delete_outline),
-                          tooltip: 'Remove',
-                          onPressed: () => cart.removeItemById(item.id),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Edit ${sandwich.name}',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                const Text('Quantity:'),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: TextField(
+                                    controller: qtyController,
+                                    keyboardType: TextInputType.number,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            TextField(
+                              controller: noteController,
+                              decoration: const InputDecoration(
+                                labelText: 'Note',
+                              ),
+                            ),
+                            SwitchListTile(
+                              title: Text(toastedValue),
+                              value: toasted,
+                              onChanged: (v) => toasted = v,
+                            ),
+                            const SizedBox(height: 12),
+                            ElevatedButton(
+                              child: const Text('Save'),
+                              onPressed: () {
+                                final newQty =
+                                    int.tryParse(qtyController.text) ??
+                                    item.quantity;
+                                final updated = item.copyWith(
+                                  quantity: newQty,
+                                  note: noteController.text,
+                                  isToasted: toasted,
+                                );
+                                cart.amendItem(item.id, updated);
+                                Navigator.of(ctx).pop();
+                              },
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              onTap: () {
-                // optional edit flow: show a simple dialog to amend note/quantity
-                showModalBottomSheet(
-                  context: context,
-                  builder: (ctx) {
-                    final qtyController = TextEditingController(
-                      text: item.quantity.toString(),
-                    );
-                    final noteController = TextEditingController(
-                      text: item.note,
-                    );
-                    bool toasted = item.isToasted;
-                    return Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
+                      );
+                    },
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    crossAxisAlignment:
+                        CrossAxisAlignment.start, // <- align children to top
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.asset(
+                          imagePath,
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) =>
+                              const Icon(Icons.fastfood, size: 40),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      // Flexible middle column aligned to top-left
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '${item.quantity} × ${sandwich.name}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              sandwich.isFootlong
+                                  ? 'Footlong • ${sandwich.breadType.name}'
+                                  : '6-inch • ${sandwich.breadType.name}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            if (item.isToasted) ...[
+                              const SizedBox(height: 6),
+                              const Text(
+                                'Toasted',
+                                style: TextStyle(fontWeight: FontWeight.w600),
+                              ),
+                            ],
+                            if (item.note.isNotEmpty) ...[
+                              const SizedBox(height: 6),
+                              Text(
+                                'Note: ${item.note}',
+                                style: const TextStyle(
+                                  fontStyle: FontStyle.italic,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      // compact trailing column (price + actions)
+                      Column(
                         mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
-                            'Edit ${sandwich.name}',
-                            style: Theme.of(context).textTheme.titleMedium,
+                            _formatPrice(unitPrice),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
-                          const SizedBox(height: 50),
+                          Text(_formatPrice(totalPrice)),
+                          const SizedBox(height: 8),
                           Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Text('Quantity:'),
-                              const SizedBox(width: 30),
-                              Expanded(
-                                child: TextField(
-                                  controller: qtyController,
-                                  keyboardType: TextInputType.number,
-                                ),
+                              IconButton(
+                                padding: EdgeInsets.zero,
+                                icon: const Icon(Icons.remove_circle_outline),
+                                onPressed: () => cart.decreaseQuantity(item.id),
+                              ),
+                              IconButton(
+                                padding: EdgeInsets.zero,
+                                icon: const Icon(Icons.delete_outline),
+                                onPressed: () => cart.removeItemById(item.id),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 30),
-                          TextField(
-                            controller: noteController,
-                            decoration: const InputDecoration(
-                              labelText: 'Note',
-                            ),
-                          ),
-                          SwitchListTile(
-                            title: const Text('Toasted'),
-                            value: toasted,
-                            onChanged: (v) => toasted = v,
-                          ),
-                          const SizedBox(height: 30),
-                          ElevatedButton(
-                            child: const Text('Save'),
-                            onPressed: () {
-                              final newQty =
-                                  int.tryParse(qtyController.text) ??
-                                  item.quantity;
-                              final updated = item.copyWith(
-                                quantity: newQty,
-                                note: noteController.text,
-                                isToasted: toasted,
-                              );
-                              cart.amendItem(item.id, updated);
-                              Navigator.of(ctx).pop();
-                            },
-                          ),
                         ],
                       ),
-                    );
-                  },
-                );
-              },
+                    ],
+                  ),
+                ),
+              ),
             );
           },
         );
@@ -382,7 +428,7 @@ class _OrderScreenState extends State<OrderScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: SizedBox(
-          height: 10000,
+          height: 100,
           child: Image.asset('assets/images/logo.png'),
         ),
         title: const Text('Sandwich Counter', style: heading1),
