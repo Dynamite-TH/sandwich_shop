@@ -3,6 +3,192 @@ import 'package:sandwich_shop/views/app_styles.dart';
 import 'package:sandwich_shop/models/sandwich.dart';
 import 'package:sandwich_shop/models/cart.dart';
 
+class CartView extends StatelessWidget {
+  final Cart cart;
+
+  const CartView({super.key, required this.cart});
+
+  String _formatPrice(double v) => '\$${v.toStringAsFixed(2)}';
+
+  String _assetPath(String path) {
+    if (path.startsWith('/')) return path.substring(1);
+    return path;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: cart,
+      builder: (context, _) {
+        final items = cart.items;
+        if (items.isEmpty) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Text('Your cart is empty', textAlign: TextAlign.center),
+            ),
+          );
+        }
+
+        return ListView.separated(
+          padding: const EdgeInsets.all(16),
+          itemCount: items.length,
+          separatorBuilder: (_, __) => const Divider(),
+          itemBuilder: (context, index) {
+            final item = items[index];
+            final sandwich = item.sandwich;
+            final unitPrice = item.unitPrice(
+              cart.pricingRepo,
+              toastedFee: cart.toastedFee,
+            );
+            final totalPrice = item.totalPrice(
+              cart.pricingRepo,
+              toastedFee: cart.toastedFee,
+            );
+
+            final imagePath = _assetPath(sandwich.image);
+
+            return ListTile(
+              contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+               isThreeLine: true,
+              leading: ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: Image.asset(
+                  imagePath,
+                  width: 30,
+                  height: 30,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) =>
+                      const Icon(Icons.fastfood, size: 10),
+                ),
+              ),
+              title: Text('${item.quantity} × ${sandwich.name}'),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    sandwich.isFootlong
+                        ? 'Footlong • ${sandwich.breadType.name}'
+                        : '6-inch • ${sandwich.breadType.name}',
+                  ),
+                  if (item.isToasted)
+                    const Text(
+                      'Toasted',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  if (item.note.isNotEmpty)
+                    Text(
+                      'Note: ${item.note}',
+                      style: const TextStyle(fontStyle: FontStyle.italic),
+                    ),
+                ],
+              ),
+              trailing: SizedBox(
+                width: 140,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      _formatPrice(unitPrice),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(_formatPrice(totalPrice)),
+                    const SizedBox(height: 0),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.remove_circle_outline),
+                          tooltip: 'Decrease',
+                          onPressed: () => cart.decreaseQuantity(item.id),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline),
+                          tooltip: 'Remove',
+                          onPressed: () => cart.removeItemById(item.id),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              onTap: () {
+                // optional edit flow: show a simple dialog to amend note/quantity
+                showModalBottomSheet(
+                  context: context,
+                  builder: (ctx) {
+                    final qtyController = TextEditingController(
+                      text: item.quantity.toString(),
+                    );
+                    final noteController = TextEditingController(
+                      text: item.note,
+                    );
+                    bool toasted = item.isToasted;
+                    return Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Edit ${sandwich.name}',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: 50),
+                          Row(
+                            children: [
+                              const Text('Quantity:'),
+                              const SizedBox(width: 30),
+                              Expanded(
+                                child: TextField(
+                                  controller: qtyController,
+                                  keyboardType: TextInputType.number,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 30),
+                          TextField(
+                            controller: noteController,
+                            decoration: const InputDecoration(
+                              labelText: 'Note',
+                            ),
+                          ),
+                          SwitchListTile(
+                            title: const Text('Toasted'),
+                            value: toasted,
+                            onChanged: (v) => toasted = v,
+                          ),
+                          const SizedBox(height: 30),
+                          ElevatedButton(
+                            child: const Text('Save'),
+                            onPressed: () {
+                              final newQty =
+                                  int.tryParse(qtyController.text) ??
+                                  item.quantity;
+                              final updated = item.copyWith(
+                                quantity: newQty,
+                                note: noteController.text,
+                                isToasted: toasted,
+                              );
+                              cart.amendItem(item.id, updated);
+                              Navigator.of(ctx).pop();
+                            },
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
 void main() {
   runApp(const App());
 }
@@ -88,6 +274,7 @@ class _OrderScreenState extends State<OrderScreen> {
             duration: const Duration(seconds: 2),
           ),
         );
+      _showCartSummary();
     }
   }
 
@@ -96,6 +283,17 @@ class _OrderScreenState extends State<OrderScreen> {
       return _addToCart;
     }
     return null;
+  }
+
+  void _showCartSummary() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => SizedBox(
+        height: MediaQuery.of(context).size.height * 0.6,
+        child: CartView(cart: _cart),
+      ),
+    );
   }
 
   List<DropdownMenuEntry<SandwichType>> _buildSandwichTypeEntries() {
@@ -188,6 +386,51 @@ class _OrderScreenState extends State<OrderScreen> {
           child: Image.asset('assets/images/logo.png'),
         ),
         title: const Text('Sandwich Counter', style: heading1),
+        actions: [
+          AnimatedBuilder(
+            animation: _cart,
+            builder: (context, _) {
+              final total = _cart.items.fold<int>(
+                0,
+                (s, it) => s + it.quantity,
+              );
+              return IconButton(
+                onPressed: _showCartSummary,
+                icon: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    const Icon(Icons.shopping_cart),
+                    if (total > 0)
+                      Positioned(
+                        right: -6,
+                        top: -6,
+                        child: Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 18,
+                            minHeight: 18,
+                          ),
+                          child: Text(
+                            '$total',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            },
+          ),
+          const SizedBox(width: 12),
+        ],
       ),
       body: Center(
         child: SingleChildScrollView(
