@@ -120,6 +120,16 @@ class Cart extends ChangeNotifier {
     return true;
   }
 
+  bool increaseQuantity(String id, {int amount = 1}) {
+    final idx = _items.indexWhere((it) => it.id == id);
+    if (idx < 0) return false;
+    final current = _items[idx];
+    final newQty = current.quantity + amount;
+    _items[idx] = current.copyWith(quantity: newQty);
+    notifyListeners();
+    return true;
+  }
+
   /// Amend an existing item (replace with the provided updated item). The
   /// item's `id` is used to locate it. Returns true if amend succeeded.
   bool amendItem(String id, OrderItem updated) {
