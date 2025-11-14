@@ -8,7 +8,7 @@ class CartView extends StatelessWidget {
 
   const CartView({super.key, required this.cart});
 
-  String _formatPrice(double v) => '\$${v.toStringAsFixed(2)}';
+  String _formatPrice(double v) => '£${v.toStringAsFixed(2)}';
 
   String _assetPath(String path) {
     if (path.startsWith('/')) return path.substring(1);
@@ -68,69 +68,78 @@ class CartView extends StatelessWidget {
                         text: item.note,
                       );
                       bool toasted = item.isToasted;
-                      String toastedValue;
-                      if (toasted == true) {
-                        toastedValue = "Toasted";
-                      } else {
-                        toastedValue = "Untoasted";
-                      }
-                      return Padding(
-                        padding: EdgeInsets.only(
-                          bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
-                          left: 16,
-                          right: 16,
-                          top: 16,
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              'Edit ${sandwich.name}',
-                              style: Theme.of(context).textTheme.titleMedium,
+                      // Use a StatefulBuilder so the local `toasted` variable
+                      // can update the UI inside the bottom sheet immediately.
+                      return StatefulBuilder(
+                        builder: (ctx2, sbSetState) {
+                          return Padding(
+                            padding: EdgeInsets.only(
+                              bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
+                              left: 16,
+                              right: 16,
+                              top: 16,
                             ),
-                            const SizedBox(height: 12),
-                            Row(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Text('Quantity:'),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: TextField(
-                                    controller: qtyController,
-                                    keyboardType: TextInputType.number,
+                                Text(
+                                  'Edit ${sandwich.name}',
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.titleMedium,
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    const Text('Quantity:'),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: TextField(
+                                        controller: qtyController,
+                                        keyboardType: TextInputType.number,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                TextField(
+                                  controller: noteController,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Note',
                                   ),
+                                ),
+                                // Show dynamic title and color the switch thumb green when ON
+                                // and red when OFF. Use sbSetState to trigger rebuild.
+                                SwitchListTile(
+                                  title: Text(
+                                    toasted ? 'Toasted' : 'Untoasted',
+                                  ),
+                                  value: toasted,
+                                  onChanged: (v) =>
+                                      sbSetState(() => toasted = v),
+                                  activeThumbColor: Colors.green,
+                                  inactiveThumbColor: Colors.red,
+                                ),
+                                const SizedBox(height: 12),
+                                ElevatedButton(
+                                  child: const Text('Save'),
+                                  onPressed: () {
+                                    final newQty =
+                                        int.tryParse(qtyController.text) ??
+                                        item.quantity;
+                                    final updated = item.copyWith(
+                                      quantity: newQty,
+                                      note: noteController.text,
+                                      isToasted: toasted,
+                                    );
+                                    cart.amendItem(item.id, updated);
+                                    Navigator.of(ctx).pop();
+                                  },
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 12),
-                            TextField(
-                              controller: noteController,
-                              decoration: const InputDecoration(
-                                labelText: 'Note',
-                              ),
-                            ),
-                            SwitchListTile(
-                              title: Text(toastedValue),
-                              value: toasted,
-                              onChanged: (v) => toasted = v,
-                            ),
-                            const SizedBox(height: 12),
-                            ElevatedButton(
-                              child: const Text('Save'),
-                              onPressed: () {
-                                final newQty =
-                                    int.tryParse(qtyController.text) ??
-                                    item.quantity;
-                                final updated = item.copyWith(
-                                  quantity: newQty,
-                                  note: noteController.text,
-                                  isToasted: toasted,
-                                );
-                                cart.amendItem(item.id, updated);
-                                Navigator.of(ctx).pop();
-                              },
-                            ),
-                          ],
-                        ),
+                          );
+                        },
                       );
                     },
                   );
@@ -271,6 +280,7 @@ class _OrderScreenState extends State<OrderScreen> {
 
   SandwichType _selectedSandwichType = SandwichType.veggieDelight;
   bool _isFootlong = true;
+  bool _isToasted = false;
   BreadType _selectedBreadType = BreadType.white;
   int _quantity = 1;
 
@@ -297,7 +307,13 @@ class _OrderScreenState extends State<OrderScreen> {
       );
 
       setState(() {
-        _cart.addItem(OrderItem(sandwich: sandwich, quantity: _quantity));
+        _cart.addItem(
+          OrderItem(
+            sandwich: sandwich,
+            quantity: _quantity,
+            isToasted: _isToasted,
+          ),
+        );
       });
 
       String sizeText;
@@ -306,8 +322,9 @@ class _OrderScreenState extends State<OrderScreen> {
       } else {
         sizeText = 'six-inch';
       }
+      final toastText = _isToasted ? 'toasted' : 'untoasted';
       String confirmationMessage =
-          'Added $_quantity $sizeText ${sandwich.name} sandwich(es) on ${_selectedBreadType.name} bread to cart';
+          'Added $_quantity $sizeText ${sandwich.name} sandwich(es) on ${_selectedBreadType.name} bread ($toastText) to cart';
 
       debugPrint(confirmationMessage);
 
@@ -394,6 +411,12 @@ class _OrderScreenState extends State<OrderScreen> {
     });
   }
 
+  void _onToastedChanged(bool value) {
+    setState(() {
+      _isToasted = value;
+    });
+  }
+
   void _onBreadTypeChanged(BreadType? value) {
     if (value != null) {
       setState(() {
@@ -461,7 +484,7 @@ class _OrderScreenState extends State<OrderScreen> {
                             minHeight: 18,
                           ),
                           child: Text(
-                            '$total',
+                            '£$total',
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 12,
@@ -505,12 +528,24 @@ class _OrderScreenState extends State<OrderScreen> {
                 dropdownMenuEntries: _buildSandwichTypeEntries(),
               ),
               const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              Column(
                 children: [
-                  const Text('Six-inch', style: normalText),
-                  Switch(value: _isFootlong, onChanged: _onSizeChanged),
-                  const Text('Footlong', style: normalText),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('Six-inch', style: normalText),
+                      Switch(value: _isFootlong, onChanged: _onSizeChanged),
+                      const Text('Footlong', style: normalText),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('Untoasted ', style: normalText),
+                      Switch(value: _isToasted, onChanged: _onToastedChanged),
+                      const Text('Toasted', style: normalText),
+                    ],
+                  ),
                 ],
               ),
               const SizedBox(height: 20),
