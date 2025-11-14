@@ -117,5 +117,58 @@ void main() {
       // expected 22.5 + 7.0 = 29.5
       expect(total, closeTo(29.5, 0.0001));
     });
+    test('findById returns correct item or null', () {
+      final sandwich = Sandwich(
+        type: SandwichType.veggieDelight,
+        isFootlong: true,
+        breadType: BreadType.wholemeal,
+      );
+      final item = OrderItem(sandwich: sandwich, quantity: 1);
+      cart.addItem(item);
+
+      final id = cart.items.first.id;
+      final found = cart.findById(id);
+      expect(found, isNotNull);
+      expect(found!.id, id);
+
+      final notFound = cart.findById('nonexistent-id');
+      expect(notFound, isNull);
+    });
+    test('clear removes all items from the cart', () {
+      final sandwich1 = Sandwich(
+        type: SandwichType.chickenTeriyaki,
+        isFootlong: true,
+        breadType: BreadType.wheat,
+      );
+      final item1 = OrderItem(sandwich: sandwich1, quantity: 1);
+      cart.addItem(item1);
+
+      final sandwich2 = Sandwich(
+        type: SandwichType.tunaMelt,
+        isFootlong: false,
+        breadType: BreadType.white,
+      );
+      final item2 = OrderItem(sandwich: sandwich2, quantity: 1);
+      cart.addItem(item2);
+
+      expect(cart.items.length, 2);
+
+      cart.clear();
+      expect(cart.items, isEmpty);
+    });
+    test('increaseQuantity increases quantity of an item', () {
+      final sandwich = Sandwich(
+        type: SandwichType.meatballMarinara,
+        isFootlong: false,
+        breadType: BreadType.white,
+      );
+      final item = OrderItem(sandwich: sandwich, quantity: 1);
+      cart.addItem(item);
+
+      final id = cart.items.first.id;
+      final increased = cart.increaseQuantity(id, amount: 2);
+      expect(increased, isTrue);
+      expect(cart.items.first.quantity, 3);
+    });
   });
 }
