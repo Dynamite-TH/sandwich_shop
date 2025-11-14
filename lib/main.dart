@@ -228,6 +228,11 @@ class CartView extends StatelessWidget {
                                 icon: const Icon(Icons.delete_outline),
                                 onPressed: () => cart.removeItemById(item.id),
                               ),
+                              IconButton(
+                                padding: EdgeInsets.zero,
+                                icon: const Icon(Icons.add_circle_outline),
+                                onPressed: () => cart.increaseQuantity(item.id),
+                              ),
                             ],
                           ),
                         ],
