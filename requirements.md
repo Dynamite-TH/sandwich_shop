@@ -45,11 +45,11 @@ The Cart Modification feature enables users of the Sandwich Shop Flutter app to 
 
 ### 3.3. General UI and Behavior
 
-- [ ] All changes are reflected immediately in the UI.
-- [ ] The cart's total price is always accurate.
-- [ ] The cart handles empty states gracefully (e.g., displays a message if empty).
-- [ ] The UI prevents negative quantities.
-- [ ] User feedback is provided for all cart modification actions.
+- [x] All changes are reflected immediately in the UI.
+- [x] The cart's total price is always accurate.
+- [x] The cart handles empty states gracefully (e.g., displays a message if empty).
+- [x] The UI prevents negative quantities.
+- [x] User feedback is provided for all cart modification actions.
 
 ---
 
