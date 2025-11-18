@@ -4,7 +4,7 @@ import 'package:sandwich_shop/views/app_styles.dart';
 import 'package:sandwich_shop/repositories/profile_provider.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({Key? key}) : super(key: key);
+  const ProfileScreen({super.key});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -48,7 +48,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _isEditing = true;
     });
     // focus after a short delay to ensure widgets are rendered
-    Future.delayed(Duration(milliseconds: 100), () {
+    Future.delayed(const Duration(milliseconds: 100), () {
       _nameFocus.requestFocus();
     });
   }
