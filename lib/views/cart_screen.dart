@@ -84,25 +84,39 @@ class _CartScreenState extends State<CartScreen> {
                           onTap: () async {
                             final result = await showDialog<int>(
                               context: context,
-                              builder: (_) => QuantityInputDialog(initialQuantity: entry.value),
+                              builder: (_) => QuantityInputDialog(
+                                initialQuantity: entry.value,
+                              ),
                             );
                             if (result != null && result != entry.value) {
                               setState(() {
                                 if (result > entry.value) {
-                                  widget.cart.add(entry.key, quantity: result - entry.value);
+                                  widget.cart.add(
+                                    entry.key,
+                                    quantity: result - entry.value,
+                                  );
                                 } else {
-                                  widget.cart.remove(entry.key, quantity: entry.value - result);
+                                  widget.cart.remove(
+                                    entry.key,
+                                    quantity: entry.value - result,
+                                  );
                                 }
                               });
                             }
                           },
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 6,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.grey.shade200,
                               borderRadius: BorderRadius.circular(6),
                             ),
-                            child: Text('Qty: ${entry.value}', style: normalText),
+                            child: Text(
+                              'Qty: ${entry.value}',
+                              style: normalText,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 8),

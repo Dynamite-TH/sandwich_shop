@@ -5,7 +5,11 @@ class QuantityInputDialog extends StatefulWidget {
   final int initialQuantity;
   final int max;
 
-  const QuantityInputDialog({super.key, required this.initialQuantity, this.max = 99});
+  const QuantityInputDialog({
+    super.key,
+    required this.initialQuantity,
+    this.max = 99,
+  });
 
   @override
   State<QuantityInputDialog> createState() => _QuantityInputDialogState();
@@ -18,7 +22,9 @@ class _QuantityInputDialogState extends State<QuantityInputDialog> {
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: widget.initialQuantity.toString());
+    _controller = TextEditingController(
+      text: widget.initialQuantity.toString(),
+    );
   }
 
   void _confirm() {
@@ -55,7 +61,10 @@ class _QuantityInputDialogState extends State<QuantityInputDialog> {
         ],
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
         ElevatedButton(onPressed: _confirm, child: const Text('OK')),
       ],
     );
