@@ -102,9 +102,35 @@ class _CartScreenState extends State<CartScreen> {
                           IconButton(
                             tooltip: 'Decrease quantity',
                             onPressed: () {
+                              final prevQty = entry.value;
                               setState(() {
                                 widget.cart.remove(entry.key, quantity: 1);
                               });
+                              if (prevQty > 1) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Quantity updated'),
+                                    duration: Duration(milliseconds: 800),
+                                  ),
+                                );
+                              } else {
+                                // prevQty == 1 -> item removed
+                                final removed = entry.key;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('${removed.name} removed'),
+                                    action: SnackBarAction(
+                                      label: 'Undo',
+                                      onPressed: () {
+                                        setState(() {
+                                          widget.cart.add(removed, quantity: 1);
+                                        });
+                                      },
+                                    ),
+                                    duration: const Duration(seconds: 5),
+                                  ),
+                                );
+                              }
                             },
                             icon: const Icon(Icons.remove_circle_outline),
                           ),
@@ -158,6 +184,12 @@ class _CartScreenState extends State<CartScreen> {
                                     setState(() {
                                       widget.cart.add(entry.key, quantity: 1);
                                     });
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Quantity updated'),
+                                        duration: Duration(milliseconds: 800),
+                                      ),
+                                    );
                                   },
                             icon: const Icon(Icons.add_circle_outline),
                           ),
