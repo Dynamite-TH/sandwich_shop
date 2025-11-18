@@ -71,8 +71,7 @@ Allow users to change the contents of their cart in common ways:
 
 ---
 
-## 2. Authentication & Profile Management
-# Feature Requirements: Profile Screen (View + Edit)
+# 2. Authentication & Profile Management
 
 ## 1. Feature overview and purpose
 Description
