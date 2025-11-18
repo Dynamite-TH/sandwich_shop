@@ -97,4 +97,121 @@ Tone and constraints for generated code
 - Provide comments explaining complex parts.
 - Provide a small test suite demonstrating behavior; tests should be runnable with flutter test.
 
-End of prompt.
+
+Authentication
+
+You are an expert Flutter developer and backend engineer. Help me implement account auth and profile management in my existing Sandwich Shop app. For each feature below include a short description, expected UI flow, exact behavior when the user performs actions, acceptance criteria, and a minimal API contract (HTTP endpoints + request/response examples). Also list validation rules, error messages, and simple security notes. Keep answers actionable for implementing in Flutter (routes, widgets, storage, tests).
+
+Features:
+
+1) Sign up (Create account)
+- Description:
+  Let users create a new account with name, email, password, and address (line, city, postcode). The app must validate inputs, show inline errors, and call backend to create account.
+- UI flow / screens:
+  Route: /sign-up. Form with fields: full name, email, password, confirm password, address line, city, postcode, "Create account" button, link to Sign in.
+- What happens on submit:
+  1. Validate locally: required fields, email format, password min length 8, password == confirm.
+  2. Disable form, show loading indicator.
+  3. POST /api/auth/register with JSON {name,email,password,address:{line,city,postcode}}.
+  4. On 201 Created: backend returns {user:{id,name,email,address}, token}. Save token securely (flutter_secure_storage), navigate to /home (or /profile) and show success toast.
+  5. On 400/422: show server validation messages inline.
+  6. On network error: show generic "Unable to create account. Check connection." and re-enable form.
+- Acceptance criteria:
+  - New user gets token stored securely and is navigated to the app main screen.
+  - Errors are shown inline or as a snackbar.
+- API contract example:
+  POST /api/auth/register
+  Request:
+  { "name":"Alice", "email":"alice@example.com", "password":"Secret123", "address":{"line":"1 Main St","city":"Town","postcode":"12345"} }
+  Success 201:
+  { "user": { "id":"u123", "name":"Alice", "email":"alice@example.com", "address":{...} }, "token":"ey..." }
+  Error 400/422:
+  { "errors": { "email":"Email already in use", "password":"Too short" } }
+
+2) Sign in
+- Description:
+  Allow existing users to sign in with email and password to receive an auth token and access protected features.
+- UI flow / screens:
+  Route: /sign-in. Form: email, password, "Sign in" button, "Forgot password?" link, link to Sign up.
+- What happens on submit:
+  1. Validate fields (required, email format).
+  2. POST /api/auth/login {email,password}.
+  3. On 200: backend returns {user, token}. Save token in secure storage, update app auth state, navigate to home, hide loading.
+  4. On 401: show "Invalid email or password" below fields.
+  5. On network error: show generic error.
+- Acceptance criteria:
+  - Valid credentials log user in and persist session until sign out or token expiry.
+  - Invalid credentials show clear error.
+- API contract:
+  POST /api/auth/login
+  Request: { "email":"alice@example.com", "password":"Secret123" }
+  Success 200: { "user":{...},"token":"ey..." }
+  Error 401: { "message":"Invalid credentials" }
+
+3) View profile (read user details)
+- Description:
+  Show current signed-in user's profile data: name, email, address. Data should be fetched from local cache first, then refreshed from server.
+- UI flow / screens:
+  Route: /profile. Read-only view with Edit button and Sign out button.
+- What happens on open:
+  1. If offline or token present, display cached user object immediately.
+  2. Send GET /api/users/me with Authorization: Bearer <token> to refresh.
+  3. On 200: update UI and local cache.
+  4. On 401: force sign out and navigate to /sign-in.
+- Acceptance criteria:
+  - Profile displays up-to-date user data.
+  - Unauthorized response triggers sign out flow.
+- API contract:
+  GET /api/users/me
+  Headers: Authorization: Bearer <token>
+  Success 200: { "user":{ "id","name","email","address":{...} } }
+  Error 401: { "message":"Token expired" }
+
+4) Edit profile (update name, email, address)
+- Description:
+  Allow users to update name, email and address. Email update may require re-verification depending on backend policy.
+- UI flow / screens:
+  Route: /profile/edit (or modal). Prefill fields, Save and Cancel buttons.
+- What happens on save:
+  1. Validate inputs (email format, required for name).
+  2. PATCH /api/users/me with JSON {name,email,address:{...}} and Authorization header.
+  3. On 200: update local cache and UI, show "Profile updated" message, return to /profile.
+  4. On 409 (email conflict): show "Email already in use".
+  5. On 401: sign out and redirect to /sign-in.
+- Acceptance criteria:
+  - Changes persist on server and locally.
+  - Conflicting email returns clear error and form remains editable.
+- API contract:
+  PATCH /api/users/me
+  Request: { "name":"New Name", "email":"new@example.com", "address":{...} }
+  Success 200: { "user":{...} }
+  Error 409: { "message":"Email already in use" }
+
+5) Sign out
+- Description:
+  Clear stored token and cached user, navigate to /sign-in.
+- What happens when user taps Sign out:
+  1. Optionally call POST /api/auth/logout to revoke token.
+  2. Delete token from secure storage, clear in-memory user, navigate to /sign-in and remove auth-only routes from navigation stack.
+- Acceptance criteria:
+  - Token and user data removed and protected routes require sign-in afterwards.
+
+Implementation hints for Flutter
+- Routes: add '/sign-in', '/sign-up', '/profile', '/profile/edit'.
+- State: use Provider / Riverpod / Bloc to expose AuthState {user, token, isLoading, signIn(), signUp(), signOut(), refreshUser(), updateProfile()}.
+- Storage: store token in flutter_secure_storage; cache user in local storage (shared_preferences or sqlite) for instant UI.
+- HTTP: central API client that attaches Authorization header when token exists and handles 401 globally to trigger signOut().
+- Forms: use TextFormField with validators, show inline errors returned from backend mapped to fields.
+- Navigation: After sign-in or sign-up use Navigator.of(context).pushReplacementNamed('/'); for home.
+- Tests: unit tests for validators and AuthState methods, integration tests covering sign-in -> profile -> edit -> sign-out flows.
+- UX notes: disable submit buttons while network call in progress; show progress indicator; confirm unsaved changes when leaving edit screen.
+- Security notes: never store plain password, use TLS, store JWT/refresh token securely, prefer refresh token flow for long sessions.
+
+Developer tasks to deliver (prioritized)
+1. Create SignInScreen and SignUpScreen widgets and add routes.
+2. Create ProfileScreen and EditProfileScreen.
+3. Implement AuthProvider with methods described and secure storage usage.
+4. Implement API client and endpoints described.
+5. Add unit tests for validation and AuthProvider; integration test for full flow.
+
+If you need, generate a concrete Flutter scaffold (widgets, provider class, and API client) matching my project structure (lib/views, lib/services, lib/models). Provide code examples and tests next.
