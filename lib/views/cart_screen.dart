@@ -48,10 +48,7 @@ class _CartScreenState extends State<CartScreen> {
             child: Image.asset('assets/images/logo.png'),
           ),
         ),
-        title: const Text(
-          'Cart View',
-          style: heading1,
-        ),
+        title: const Text('Cart View', style: heading1),
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -67,9 +64,39 @@ class _CartScreenState extends State<CartScreen> {
                       '${_getSizeText(entry.key.isFootlong)} on ${entry.key.breadType.name} bread',
                       style: normalText,
                     ),
-                    Text(
-                      'Qty: ${entry.value} - £${_getItemPrice(entry.key, entry.value).toStringAsFixed(2)}',
-                      style: normalText,
+                    // Quantity controls: decrement, value, increment
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton(
+                          tooltip: 'Decrease quantity',
+                          onPressed: () {
+                            setState(() {
+                              widget.cart.remove(entry.key, quantity: 1);
+                            });
+                          },
+                          icon: const Icon(Icons.remove_circle_outline),
+                        ),
+                        const SizedBox(width: 8),
+                        Text('Qty: ${entry.value}', style: normalText),
+                        const SizedBox(width: 8),
+                        IconButton(
+                          tooltip: 'Increase quantity',
+                          onPressed: entry.value >= 99
+                              ? null
+                              : () {
+                                  setState(() {
+                                    widget.cart.add(entry.key, quantity: 1);
+                                  });
+                                },
+                          icon: const Icon(Icons.add_circle_outline),
+                        ),
+                        const SizedBox(width: 16),
+                        Text(
+                          '£${_getItemPrice(entry.key, entry.value).toStringAsFixed(2)}',
+                          style: normalText,
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 20),
                   ],
