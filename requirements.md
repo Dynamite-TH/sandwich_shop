@@ -72,133 +72,263 @@ Allow users to change the contents of their cart in common ways:
 ---
 
 ## 2. Authentication & Profile Management
+# Feature Requirements: Profile Screen (View + Edit)
 
-### 2.1 Feature Description
-Add account creation, sign-in, profile viewing and editing so users can manage addresses and personal data across devices. Persist tokens securely.
+## 1. Feature overview and purpose
+Description
+- Add a new "Profile" screen to the app where a user can view and edit their personal details: Name, Email, Phone.
+- Purpose: allow users to enter or update basic contact information required for orders and future personalization. No authentication or persistence required initially — data is stored in-memory for the current app session.
 
-### 2.2 Subtasks
-1. Auth model: User {id, name, email, address}, AuthState {user, token, isLoading}.
-2. Implement AuthProvider (ChangeNotifier) with methods:
-   - signUp(name,email,password,address), signIn(email,password), signOut(), refreshUser(), updateProfile(updatedUser).
-3. Secure storage: store token in flutter_secure_storage; cache user in SharedPreferences for quick display.
-4. Routes & UI screens:
-   - /sign-in (SignInScreen), /sign-up (SignUpScreen)
-   - /profile (ProfileScreen read-only with Edit + Sign out), /profile/edit (EditProfileScreen)
-5. HTTP client:
-   - Central API client that includes Authorization: Bearer <token> when present and handles 401 by triggering signOut().
-6. Forms:
-   - Validation: name required, email format, password min 8, confirm password match.
-   - Inline field errors and server-side error mapping.
-7. Tests:
-   - Unit tests for AuthProvider (signIn/signUp/updateProfile) using mocked HTTP layer and mocked secure storage.
-   - Widget tests for sign-in/up form validation and navigation.
+Scope
+- UI screen accessible from the Order screen via a link at the bottom.
+- View mode (readonly) and Edit mode (editable fields).
+- Client-side validation only.
+- In-memory state only; no backend, no local storage.
+- UX behaviors for Save, Cancel, and unsaved-change confirmation.
 
-### 2.3 User Stories
-- As a new user I can create an account by providing name, email, password and address so I can save orders to my account.
-- As a returning user I can sign in with email and password and remain signed in across app restarts.
-- As a signed-in user I can view my profile details immediately and refresh from server.
-- As a signed-in user I can edit my name, email and address; conflicts (email in use) surface as clear inline errors.
-- As a signed-in user I can sign out which clears my token and cached user data.
-
-### 2.4 Acceptance Criteria
-- Sign up:
-  - Local validation enforced; on success API returns token+user, token stored securely, user navigated to home/profile and state updated.
-  - Server validation errors shown inline.
-- Sign in:
-  - Valid creds save token securely, update AuthProvider, navigate to home.
-  - Invalid creds show clear error (e.g., "Invalid credentials").
-- Profile view:
-  - Cached user shown immediately; GET /api/users/me refreshes and updates cache.
-  - 401 from API triggers sign out flow.
-- Edit profile:
-  - Valid updates PATCH to /api/users/me, updates local cache and UI.
-  - 409 conflict (email) surfaces inline and leaves form editable.
-- Sign out:
-  - Token removed from secure storage and in-memory cache; user redirected to /sign-in.
-- Security:
-  - Token stored in flutter_secure_storage, all API calls over HTTPS, never store plaintext password.
-
-### 2.5 Minimal API Contract (examples)
-- POST /api/auth/register
-  - Req: {name,email,password,address:{line,city,postcode}}
-  - 201: {user:{id,name,email,address}, token:"..."}
-  - 400/422: {errors:{field:"msg"}}
-- POST /api/auth/login
-  - Req: {email,password}
-  - 200: {user:{...}, token:"..."}
-  - 401: {message:"Invalid credentials"}
-- GET /api/users/me
-  - Header: Authorization: Bearer <token>
-  - 200: {user:{...}}
-  - 401: {message:"Token expired"}
-- PATCH /api/users/me
-  - Header: Authorization
-  - Req: {name,email,address:{...}}
-  - 200: {user:{...}}
-  - 409: {message:"Email already in use"}
-
-### 2.6 Validation & Error Messages
-- Email: required, valid format → "Enter a valid email."
-- Password: required, min 8 chars → "Password must be at least 8 characters."
-- Name: required → "Enter your name."
-- Address fields: required (line, city, postcode) → "Address is required."
-- Network error: "Unable to connect. Check your internet and try again."
-- 401: "Session expired. Please sign in again."
-
-### 2.7 Test Requirements
-- Unit tests for AuthProvider:
-  - signUp success/failure, signIn success/401, updateProfile success/409, signOut clears storage.
-- Widget tests for SignIn/SignUp forms:
-  - Validation messages appear, navigation on success.
+Out of scope
+- Real authentication, server-side persistence, multi-account support, profile image upload.
 
 ---
 
-## Migration Plan & Files to Change
+## 2. User stories
 
-### Files to add/modify (suggested layout)
-- lib/models/cart_item.dart (new) — cart item model + serialization
-- lib/providers/cart_provider.dart (new) — ChangeNotifier with cart logic & persistence
-- lib/views/cart/cart_screen.dart (modify) — use CartProvider, update totals UI
-- lib/views/cart/cart_row.dart (new) — row widget with +/−, edit, trash, swipe handling
-- lib/views/cart/quantity_modal.dart (new) — numeric input modal
-- lib/views/customization/customization_screen.dart (modify) — support prefill for editing
-- lib/services/storage_service.dart (new/modify) — SharedPreferences wrapper
-- lib/models/user.dart (new) — user model
-- lib/providers/auth_provider.dart (new) — auth logic + secure storage
-- lib/views/auth/sign_in.dart (new), sign_up.dart (new), profile.dart (new), profile_edit.dart (new)
+User role: End user (anonymous or signed-in)
+- As a user, I want to open a Profile screen from the Order screen so I can see my saved name, email, and phone for quick reference.
+- As a user with no saved profile, I want the Profile screen to show empty fields and a prompt to complete my profile.
+- As a user, I want to tap Edit to change my name, email, or phone so that order details use up-to-date contact information.
+- As a user, I want validation errors shown inline if I enter an invalid email or phone so I can correct mistakes before saving.
+- As a user, I want Save to persist changes for the current app session and return the screen to view mode with a confirmation message.
+- As a user, I want Cancel to discard my unsaved edits and restore previously saved values.
+- As a user, if I try to navigate back with unsaved changes, I want a confirmation prompt to avoid accidental loss of edits.
 
-### Integration checklist
-- Replace direct cart state in order screen to call CartProvider.addItem(...)
-- Ensure customization screen returns CartItemOptions when used for edit flow
-- Register providers in main.dart (ChangeNotifierProvider for CartProvider and AuthProvider)
-- Add routes: /sign-in, /sign-up, /profile, /profile/edit, cart screens if not present
-
-### How to run tests & QA
-- Run unit/widget tests:
-  - flutter test
-- Manual QA flows:
-  - Add items in OrderScreen, go to Cart, test increment/decrement/manual set.
-  - Remove item and confirm Undo restores.
-  - Edit item with price change; ensure totals update and merge behavior works.
-  - Save-for-later move and restart app to validate persistence.
-  - Sign up, sign in, view/edit profile, sign out flows with mocked API or test backend.
+Edge-case user stories
+- As a user, if I attempt to Save with an empty required Name field, I want an error preventing save.
+- As a user, if I enter a phone with spaces or punctuation, I want the app to accept common phone formats (digits, +, spaces, -, parentheses) or show clear validation instructions if invalid.
 
 ---
 
-## Non-functional & Security Notes
-- All network operations asynchronous; UI must show progress indicators and disable repeated actions.
-- Store tokens in flutter_secure_storage; do not store passwords.
-- Use HTTPS; handle 401 globally to sign out.
-- Accessibility: label +/− buttons, Edit, Remove, Save-for-later for screen readers.
-- Performance: use ListView.builder, avoid rebuilding whole list on single-row updates (notifyListeners granularity).
+## 3. Acceptance criteria (testable)
+
+Navigation
+- [AC-1] A "Profile" link/button is present at the bottom of the Order screen.
+- [AC-2] Tapping the "Profile" link navigates to the Profile screen.
+
+Profile screen layout & initial state
+- [AC-3] Profile screen shows a header "Profile" and three fields: Name, Email, Phone.
+- [AC-4] On first open with no prior in-memory data, fields are empty and view mode shows an "Edit" button and optional hint text ("Complete your profile").
+- [AC-5] Fields are readonly in view mode; tapping "Edit" switches to edit mode.
+
+Edit mode behavior
+- [AC-6] Edit mode shows editable inputs for Name, Email, Phone and buttons "Save" and "Cancel".
+- [AC-7] Focus is placed on the Name input when entering edit mode.
+
+Validation rules
+- [AC-8] Name is required; Save fails with inline error when Name is empty.
+- [AC-9] Email must match a basic email regex (e.g., contains "@" and a domain); invalid email shows inline error and prevents Save.
+- [AC-10] Phone is optional; if provided, it must contain only digits and allowed characters (+, spaces, -, parentheses); invalid phone shows inline error and prevents Save.
+
+Saving and canceling
+- [AC-11] On successful Save, the in-memory profile state is updated for the session, the screen returns to view mode, and a visible confirmation message "Profile saved" appears.
+- [AC-12] Cancel discards unsaved edits and returns the screen to view mode showing last-saved values (or empty if none).
+- [AC-13] No actual persistence to disk or network occurs after Save.
+
+Unsaved changes and back navigation
+- [AC-14] If the user has unsaved changes and attempts to navigate back (via header back or system back), a confirmation prompt "Discard changes?" with actions "Discard" and "Continue editing" is shown.
+- [AC-15] Selecting "Discard" navigates back and discards edits; selecting "Continue editing" returns to edit mode and preserves edits.
+
+Accessibility & UX
+- [AC-16] All inputs have accessible labels.
+- [AC-17] Inline errors are programmatically associated with inputs for screen readers.
+- [AC-18] Buttons are reachable by keyboard/tab navigation (where applicable).
+
+Testing
+- [AC-19] Unit tests cover validation logic for email and phone formats.
+- [AC-20] Navigation behavior from Order -> Profile and back is covered by an integration/UI test (or manual test steps documented).
+
+Non-functional
+- [AC-21] Profile screen renders within acceptable performance bounds (no perceptible delay on navigation).
+- [AC-22] Behavior is consistent across supported platforms (Windows desktop dev environment).
 
 ---
 
-## Priority Implementation Plan (Minimal Viable Changes)
-1. Create CartProvider + Cart model + persist/load from SharedPreferences.
-2. Implement CartScreen + CartRow with +/− and trash icon (swipe later).
-3. Add Undo snackbar and basic numeric modal for manual set.
-4. Implement edit flow integration with existing customization screen and merging logic.
-5. Add save-for-later persistence.
-6. Add AuthProvider and basic SignIn/SignUp/Profile screens (use mocked API if backend not available).
-7. Add unit/widget tests iteratively for each completed piece.
+## 4. Subtasks (implementation plan)
+
+Subtask 1 — Design & spec
+- Description: Create simple wireframe for Profile screen showing view/edit states and control placements; define exact validation patterns.
+- Done when: wireframe image or small mock and regex definitions exist in the ticket.
+
+Subtask 2 — Add navigation link on Order screen
+- Description: Add a small "Profile" link/button at bottom of Order screen.
+- Done when: tapping link opens Profile screen (AC-1, AC-2).
+
+Subtask 3 — Implement Profile screen UI
+- Description: Implement view mode (readonly) and edit mode UI with Name, Email, Phone, Edit/Save/Cancel controls and confirmation toast area.
+- Done when: UI matches spec and header/labels present (AC-3..AC-7, AC-16).
+
+Subtask 4 — Implement in-memory state
+- Description: Add app-level in-memory state (singleton/service/context) to store profile data for the session.
+- Done when: Save updates in-memory store and view mode displays saved values (AC-11, AC-13).
+
+Subtask 5 — Implement validation logic
+- Description: Add client-side validation for Name (required), Email (regex), Phone (allowed chars).
+- Done when: invalid inputs block Save and show inline errors (AC-8..AC-10).
+
+Subtask 6 — Unsaved changes handling
+- Description: Detect dirty form state; intercept back navigation and show discard confirmation dialog when needed.
+- Done when: confirmation dialog behavior works as specified (AC-14, AC-15).
+
+Subtask 7 — Tests
+- Description: Unit tests for validation functions and integration tests for navigation and save/cancel flows.
+- Done when: tests exist and pass (AC-19, AC-20).
+
+Subtask 8 — Accessibility & QA
+- Description: Ensure labels, aria/error associations, keyboard focus handling; run manual test plan.
+- Done when: accessibility checks pass and manual QA confirms behaviors (AC-16, AC-17, AC-18).
+
+---
+
+## 5. Example validation patterns (for implementers)
+- Name: non-empty string; trim() length > 0.
+- Email (basic): /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+- Phone (permissive): /^[0-9+\-\s()]*$/ (empty allowed)
+
+---
+
+## 6. Deliverables
+- New Profile screen UI code.
+- Navigation link from Order screen.
+- In-memory profile state implementation.
+- Validation logic and unit tests.
+- Documentation of manual test steps for QA.
+
+# Feature Requirements: Profile Screen (View + Edit)
+
+## 1. Feature overview and purpose
+
+Description
+- Add a new "Profile" screen to the app where a user can view and edit their personal details: Name, Email, Phone.
+- Purpose: allow users to enter or update basic contact information required for orders and future personalization. No authentication or persistence required initially — data is stored in-memory for the current app session.
+
+Scope
+- UI screen accessible from the Order screen via a link at the bottom.
+- View mode (readonly) and Edit mode (editable fields).
+- Client-side validation only.
+- In-memory state only; no backend, no local storage.
+- UX behaviors for Save, Cancel, and unsaved-change confirmation.
+
+Out of scope
+- Real authentication, server-side persistence, multi-account support, profile image upload.
+
+---
+
+## 2. User stories
+
+User role: End user (anonymous or signed-in)
+- As a user, I want to open a Profile screen from the Order screen so I can see my saved name, email, and phone for quick reference.
+- As a user with no saved profile, I want the Profile screen to show empty fields and a prompt to complete my profile.
+- As a user, I want to tap Edit to change my name, email, or phone so that order details use up-to-date contact information.
+- As a user, I want validation errors shown inline if I enter an invalid email or phone so I can correct mistakes before saving.
+- As a user, I want Save to persist changes for the current app session and return the screen to view mode with a confirmation message.
+- As a user, I want Cancel to discard my unsaved edits and restore previously saved values.
+- As a user, if I try to navigate back with unsaved changes, I want a confirmation prompt to avoid accidental loss of edits.
+
+Edge-case user stories
+- As a user, if I attempt to Save with an empty required Name field, I want an error preventing save.
+- As a user, if I enter a phone with spaces or punctuation, I want the app to accept common phone formats (digits, +, spaces, -, parentheses) or show clear validation instructions if invalid.
+
+---
+
+## 3. Acceptance criteria (testable)
+
+Navigation
+- [AC-1] A "Profile" link/button is present at the bottom of the Order screen.
+- [AC-2] Tapping the "Profile" link navigates to the Profile screen.
+
+Profile screen layout & initial state
+- [AC-3] Profile screen shows a header "Profile" and three fields: Name, Email, Phone.
+- [AC-4] On first open with no prior in-memory data, fields are empty and view mode shows an "Edit" button and optional hint text ("Complete your profile").
+- [AC-5] Fields are readonly in view mode; tapping "Edit" switches to edit mode.
+
+Edit mode behavior
+- [AC-6] Edit mode shows editable inputs for Name, Email, Phone and buttons "Save" and "Cancel".
+- [AC-7] Focus is placed on the Name input when entering edit mode.
+
+Validation rules
+- [AC-8] Name is required; Save fails with inline error when Name is empty.
+- [AC-9] Email must match a basic email regex (e.g., contains "@" and a domain); invalid email shows inline error and prevents Save.
+- [AC-10] Phone is optional; if provided, it must contain only digits and allowed characters (+, spaces, -, parentheses); invalid phone shows inline error and prevents Save.
+
+Saving and canceling
+- [AC-11] On successful Save, the in-memory profile state is updated for the session, the screen returns to view mode, and a visible confirmation message "Profile saved" appears.
+- [AC-12] Cancel discards unsaved edits and returns the screen to view mode showing last-saved values (or empty if none).
+- [AC-13] No actual persistence to disk or network occurs after Save.
+
+Unsaved changes and back navigation
+- [AC-14] If the user has unsaved changes and attempts to navigate back (via header back or system back), a confirmation prompt "Discard changes?" with actions "Discard" and "Continue editing" is shown.
+- [AC-15] Selecting "Discard" navigates back and discards edits; selecting "Continue editing" returns to edit mode and preserves edits.
+
+Accessibility & UX
+- [AC-16] All inputs have accessible labels.
+- [AC-17] Inline errors are programmatically associated with inputs for screen readers.
+- [AC-18] Buttons are reachable by keyboard/tab navigation (where applicable).
+
+Testing
+- [AC-19] Unit tests cover validation logic for email and phone formats.
+- [AC-20] Navigation behavior from Order -> Profile and back is covered by an integration/UI test (or manual test steps documented).
+
+Non-functional
+- [AC-21] Profile screen renders within acceptable performance bounds (no perceptible delay on navigation).
+- [AC-22] Behavior is consistent across supported platforms (Windows desktop dev environment).
+
+---
+
+## 4. Subtasks (implementation plan)
+
+Subtask 1 — Design & spec
+- Description: Create simple wireframe for Profile screen showing view/edit states and control placements; define exact validation patterns.
+- Done when: wireframe image or small mock and regex definitions exist in the ticket.
+
+Subtask 2 — Add navigation link on Order screen
+- Description: Add a small "Profile" link/button at bottom of Order screen.
+- Done when: tapping link opens Profile screen (AC-1, AC-2).
+
+Subtask 3 — Implement Profile screen UI
+- Description: Implement view mode (readonly) and edit mode UI with Name, Email, Phone, Edit/Save/Cancel controls and confirmation toast area.
+- Done when: UI matches spec and header/labels present (AC-3..AC-7, AC-16).
+
+Subtask 4 — Implement in-memory state
+- Description: Add app-level in-memory state (singleton/service/context) to store profile data for the session.
+- Done when: Save updates in-memory store and view mode displays saved values (AC-11, AC-13).
+
+Subtask 5 — Implement validation logic
+- Description: Add client-side validation for Name (required), Email (regex), Phone (allowed chars).
+- Done when: invalid inputs block Save and show inline errors (AC-8..AC-10).
+
+Subtask 6 — Unsaved changes handling
+- Description: Detect dirty form state; intercept back navigation and show discard confirmation dialog when needed.
+- Done when: confirmation dialog behavior works as specified (AC-14, AC-15).
+
+Subtask 7 — Tests
+- Description: Unit tests for validation functions and integration tests for navigation and save/cancel flows.
+- Done when: tests exist and pass (AC-19, AC-20).
+
+Subtask 8 — Accessibility & QA
+- Description: Ensure labels, aria/error associations, keyboard focus handling; run manual test plan.
+- Done when: accessibility checks pass and manual QA confirms behaviors (AC-16, AC-17, AC-18).
+
+---
+
+## 5. Example validation patterns (for implementers)
+- Name: non-empty string; trim() length > 0.
+- Email (basic): /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+- Phone (permissive): /^[0-9+\-\s()]*$/ (empty allowed)
+
+---
+
+## 6. Deliverables
+- New Profile screen UI code.
+- Navigation link from Order screen.
+- In-memory profile state implementation.
+- Validation logic and unit tests.
+- Documentation of manual test steps for QA.
