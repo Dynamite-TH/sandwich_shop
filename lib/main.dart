@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:sandwich_shop/views/order_screen.dart';
+import 'package:provider/provider.dart';
 import 'package:sandwich_shop/views/about_screen.dart';
 import 'package:sandwich_shop/repositories/profile_provider.dart';
 
