@@ -4,6 +4,7 @@ import 'package:sandwich_shop/views/order_screen.dart';
 import 'package:sandwich_shop/models/cart.dart';
 import 'package:sandwich_shop/models/sandwich.dart';
 import 'package:sandwich_shop/repositories/pricing_repository.dart';
+import 'package:sandwich_shop/views/quantity_modal.dart';
 
 class CartScreen extends StatefulWidget {
   final Cart cart;
@@ -78,7 +79,32 @@ class _CartScreenState extends State<CartScreen> {
                           icon: const Icon(Icons.remove_circle_outline),
                         ),
                         const SizedBox(width: 8),
-                        Text('Qty: ${entry.value}', style: normalText),
+                        // Tapping quantity opens numeric input dialog
+                        GestureDetector(
+                          onTap: () async {
+                            final result = await showDialog<int>(
+                              context: context,
+                              builder: (_) => QuantityInputDialog(initialQuantity: entry.value),
+                            );
+                            if (result != null && result != entry.value) {
+                              setState(() {
+                                if (result > entry.value) {
+                                  widget.cart.add(entry.key, quantity: result - entry.value);
+                                } else {
+                                  widget.cart.remove(entry.key, quantity: entry.value - result);
+                                }
+                              });
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade200,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text('Qty: ${entry.value}', style: normalText),
+                          ),
+                        ),
                         const SizedBox(width: 8),
                         IconButton(
                           tooltip: 'Increase quantity',
