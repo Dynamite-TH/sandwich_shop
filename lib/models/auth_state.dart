@@ -17,19 +17,22 @@ class AuthState {
   }
 
   Map<String, dynamic> toJson() => {
-        'user': user?.toJson(),
-        'token': token,
-        'isLoading': isLoading,
-      };
+    'user': user?.toJson(),
+    'token': token,
+    'isLoading': isLoading,
+  };
 
   factory AuthState.fromJson(Map<String, dynamic> json) {
     return AuthState(
-      user: json['user'] != null ? User.fromJson(Map<String, dynamic>.from(json['user'])) : null,
+      user: json['user'] != null
+          ? User.fromJson(Map<String, dynamic>.from(json['user']))
+          : null,
       token: json['token'] as String?,
       isLoading: json['isLoading'] as bool? ?? false,
     );
   }
 
   @override
-  String toString() => 'AuthState(user: $user, token: ${token != null ? '***' : null}, isLoading: $isLoading)';
+  String toString() =>
+      'AuthState(user: $user, token: ${token != null ? '***' : null}, isLoading: $isLoading)';
 }

@@ -6,7 +6,11 @@ class Address {
   final String city;
   final String postcode;
 
-  const Address({required this.line, required this.city, required this.postcode});
+  const Address({
+    required this.line,
+    required this.city,
+    required this.postcode,
+  });
 
   Address copyWith({String? line, String? city, String? postcode}) {
     return Address(
@@ -25,10 +29,10 @@ class Address {
   }
 
   Map<String, dynamic> toJson() => {
-        'line': line,
-        'city': city,
-        'postcode': postcode,
-      };
+    'line': line,
+    'city': city,
+    'postcode': postcode,
+  };
 
   @override
   String toString() => 'Address(line: $line, city: $city, postcode: $postcode)';
@@ -52,7 +56,12 @@ class User {
   final String email;
   final Address? address;
 
-  const User({required this.id, required this.name, required this.email, this.address});
+  const User({
+    required this.id,
+    required this.name,
+    required this.email,
+    this.address,
+  });
 
   User copyWith({String? id, String? name, String? email, Address? address}) {
     return User(
@@ -68,21 +77,23 @@ class User {
       id: json['id']?.toString() ?? '',
       name: json['name'] as String? ?? '',
       email: json['email'] as String? ?? '',
-      address: json['address'] != null && json['address'] is Map<String, dynamic>
+      address:
+          json['address'] != null && json['address'] is Map<String, dynamic>
           ? Address.fromJson(Map<String, dynamic>.from(json['address']))
           : null,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'email': email,
-        if (address != null) 'address': address!.toJson(),
-      };
+    'id': id,
+    'name': name,
+    'email': email,
+    if (address != null) 'address': address!.toJson(),
+  };
 
   @override
-  String toString() => 'User(id: $id, name: $name, email: $email, address: $address)';
+  String toString() =>
+      'User(id: $id, name: $name, email: $email, address: $address)';
 
   @override
   bool operator ==(Object other) =>
@@ -95,5 +106,6 @@ class User {
           address == other.address;
 
   @override
-  int get hashCode => id.hashCode ^ name.hashCode ^ email.hashCode ^ (address?.hashCode ?? 0);
+  int get hashCode =>
+      id.hashCode ^ name.hashCode ^ email.hashCode ^ (address?.hashCode ?? 0);
 }
