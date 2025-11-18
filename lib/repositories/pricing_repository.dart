@@ -1,14 +1,13 @@
 class PricingRepository {
-  final double sixInchPrice;
-  final double footlongPrice;
+  double calculatePrice({required int quantity, required bool isFootlong}) {
+    double price = 0.0;
 
-  PricingRepository({this.sixInchPrice = 7.0, this.footlongPrice = 11});
-
-  double calculatePrice(int quantity, bool isFootlong) {
-    double basePrice = sixInchPrice;
     if (isFootlong) {
-      basePrice = footlongPrice;
+      price = 11.00;
+    } else {
+      price = 7.00;
     }
-    return basePrice * quantity;
+
+    return quantity * price;
   }
 }

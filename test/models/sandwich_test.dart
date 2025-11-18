@@ -2,75 +2,66 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sandwich_shop/models/sandwich.dart';
 
 void main() {
-  group('Sandwich model', () {
-    test('name returns readable name for each SandwichType', () {
-      expect(
-        Sandwich(
-          type: SandwichType.veggieDelight,
-          isFootlong: true,
-          breadType: BreadType.white,
-        ).name,
-        'Veggie Delight',
+  group('Sandwich', () {
+    test('should create a Sandwich with correct properties', () {
+      final Sandwich sandwich = Sandwich(
+        type: SandwichType.veggieDelight,
+        isFootlong: true,
+        breadType: BreadType.wholemeal,
       );
 
-      expect(
-        Sandwich(
-          type: SandwichType.chickenTeriyaki,
-          isFootlong: true,
-          breadType: BreadType.white,
-        ).name,
-        'Chicken Teriyaki',
-      );
-
-      expect(
-        Sandwich(
-          type: SandwichType.tunaMelt,
-          isFootlong: true,
-          breadType: BreadType.white,
-        ).name,
-        'Tuna Melt',
-      );
-
-      expect(
-        Sandwich(
-          type: SandwichType.meatballMarinara,
-          isFootlong: true,
-          breadType: BreadType.white,
-        ).name,
-        'Meatball Marinara',
-      );
+      expect(sandwich.type, SandwichType.veggieDelight);
+      expect(sandwich.isFootlong, isTrue);
+      expect(sandwich.breadType, BreadType.wholemeal);
+      expect(sandwich.name, 'Veggie Delight');
+      expect(sandwich.image, 'assets/images/veggieDelight_footlong.png');
     });
 
-    test('image returns correct path for footlong and six_inch', () {
-      final s1 = Sandwich(
+    test('should support all BreadType enum values', () {
+      for (final BreadType bread in BreadType.values) {
+        final Sandwich sandwich = Sandwich(
+          type: SandwichType.tunaMelt,
+          isFootlong: false,
+          breadType: bread,
+        );
+        expect(sandwich.breadType, bread);
+      }
+    });
+
+    test('should support all SandwichType enum values and correct names', () {
+      final Map<SandwichType, String> expectedNames = {
+        SandwichType.veggieDelight: 'Veggie Delight',
+        SandwichType.chickenTeriyaki: 'Chicken Teriyaki',
+        SandwichType.tunaMelt: 'Tuna Melt',
+        SandwichType.meatballMarinara: 'Meatball Marinara',
+      };
+      for (final SandwichType type in SandwichType.values) {
+        final Sandwich sandwich = Sandwich(
+          type: type,
+          isFootlong: false,
+          breadType: BreadType.white,
+        );
+        expect(sandwich.type, type);
+        expect(sandwich.name, expectedNames[type]);
+      }
+    });
+
+    test('should generate correct image path for footlong', () {
+      final Sandwich sandwich = Sandwich(
         type: SandwichType.chickenTeriyaki,
         isFootlong: true,
         breadType: BreadType.wheat,
       );
-      expect(
-        s1.image,
-        'assets/images/${SandwichType.chickenTeriyaki.name}_footlong.png',
-      );
-
-      final s2 = Sandwich(
-        type: SandwichType.tunaMelt,
-        isFootlong: false,
-        breadType: BreadType.wheat,
-      );
-      expect(
-        s2.image,
-        'assets/images/${SandwichType.tunaMelt.name}_six_inch.png',
-      );
+      expect(sandwich.image, 'assets/images/chickenTeriyaki_footlong.png');
     });
 
-    test('image uses enum name substring (checks formatting)', () {
-      final s = Sandwich(
+    test('should generate correct image path for six inch', () {
+      final Sandwich sandwich = Sandwich(
         type: SandwichType.meatballMarinara,
         isFootlong: false,
         breadType: BreadType.white,
       );
-      expect(s.image.contains(SandwichType.meatballMarinara.name), isTrue);
-      expect(s.image.endsWith('_six_inch.png'), isTrue);
+      expect(sandwich.image, 'assets/images/meatballMarinara_six_inch.png');
     });
   });
 }

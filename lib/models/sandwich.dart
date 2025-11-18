@@ -1,6 +1,11 @@
 enum BreadType { white, wheat, wholemeal }
 
-enum SandwichType { veggieDelight, chickenTeriyaki, tunaMelt, meatballMarinara }
+enum SandwichType {
+  veggieDelight,
+  chickenTeriyaki,
+  tunaMelt,
+  meatballMarinara,
+}
 
 class Sandwich {
   final SandwichType type;
@@ -34,6 +39,6 @@ class Sandwich {
     } else {
       sizeString = 'six_inch';
     }
-    return '/images/${typeString}_$sizeString.png';
+    return 'assets/images/${typeString}_$sizeString.png';
   }
 }
