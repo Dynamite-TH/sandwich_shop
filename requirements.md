@@ -29,19 +29,19 @@ The Cart Modification feature enables users of the Sandwich Shop Flutter app to 
 
 ### 3.1. Quantity Adjustment
 
-- [ ] Each cart item displays "+" and "–" buttons for quantity adjustment.
-- [ ] Tapping "+" increases the quantity by 1.
-- [ ] Tapping "–" decreases the quantity by 1.
-- [ ] If the quantity is reduced below 1, the item is removed from the cart.
-- [ ] The total price updates automatically and accurately.
-- [ ] The UI updates immediately to reflect changes.
+- [x] Each cart item displays "+" and "–" buttons for quantity adjustment.
+- [x] Tapping "+" increases the quantity by 1.
+- [x] Tapping "–" decreases the quantity by 1.
+- [x] If the quantity is reduced below 1, the item is removed from the cart.
+- [x] The total price updates automatically and accurately.
+- [x] The UI updates immediately to reflect changes.
 
 ### 3.2. Remove Item
 
-- [ ] Each cart item has a "Remove" button (e.g., trash icon).
-- [ ] Tapping "Remove" deletes the item from the cart.
-- [ ] The total price updates accordingly.
-- [ ] A snackbar or similar feedback is shown when an item is removed.
+- [x] Each cart item has a "Remove" button (e.g., trash icon).
+- [x] Tapping "Remove" deletes the item from the cart.
+- [x] The total price updates accordingly.
+- [x] A snackbar or similar feedback is shown when an item is removed.
 
 ### 3.3. General UI and Behavior
 
