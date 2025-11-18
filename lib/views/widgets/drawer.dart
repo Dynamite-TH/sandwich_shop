@@ -19,8 +19,10 @@ class AppDrawer extends StatelessWidget {
                   child: Image.asset('assets/images/logo.png'),
                 ),
                 const SizedBox(height: 8),
-                const Text('Sandwich Shop',
-                    style: TextStyle(color: Colors.white, fontSize: 24)),
+                const Text(
+                  'Sandwich Shop',
+                  style: TextStyle(color: Colors.white, fontSize: 24),
+                ),
               ],
             ),
           ),
@@ -41,11 +43,11 @@ class AppDrawer extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.shopping_cart),
-            title: const Text('Cart'),
+            leading: const Icon(Icons.home),
+            title: const Text('Home'),
             onTap: () {
               Navigator.of(context).pop();
-              Navigator.of(context).pushNamed('/cart');
+              Navigator.of(context).pushNamed('/');
             },
           ),
         ],
