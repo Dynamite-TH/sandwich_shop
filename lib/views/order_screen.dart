@@ -4,6 +4,7 @@ import 'package:sandwich_shop/views/profile_screen.dart';
 import 'package:sandwich_shop/views/cart_screen.dart';
 import 'package:sandwich_shop/models/cart.dart';
 import 'package:sandwich_shop/models/sandwich.dart';
+import 'package:sandwich_shop/views/widgets/drawer.dart';
 
 class OrderScreen extends StatefulWidget {
   final int maxQuantity;
@@ -24,6 +25,8 @@ class _OrderScreenState extends State<OrderScreen> {
   bool _isFootlong = true;
   BreadType _selectedBreadType = BreadType.white;
   int _quantity = 1;
+
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -126,6 +129,7 @@ class _OrderScreenState extends State<OrderScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         leading: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -135,7 +139,16 @@ class _OrderScreenState extends State<OrderScreen> {
           ),
         ),
         title: const Text('Sandwich Counter', style: heading1),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed: () {
+              _scaffoldKey.currentState?.openDrawer();
+            },
+          ),
+        ],
       ),
+      drawer: const AppDrawer(),
       body: Center(
         child: SingleChildScrollView(
           child: Column(
