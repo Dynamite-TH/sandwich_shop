@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sandwich_shop/views/app_styles.dart';
+import 'package:sandwich_shop/views/profile_screen.dart';
 import 'package:sandwich_shop/views/cart_screen.dart';
 import 'package:sandwich_shop/models/cart.dart';
 import 'package:sandwich_shop/models/sandwich.dart';
@@ -87,8 +88,11 @@ class _OrderScreenState extends State<OrderScreen> {
   List<DropdownMenuEntry<SandwichType>> _buildSandwichTypeEntries() {
     List<DropdownMenuEntry<SandwichType>> entries = [];
     for (SandwichType type in SandwichType.values) {
-      Sandwich sandwich =
-          Sandwich(type: type, isFootlong: true, breadType: BreadType.white);
+      Sandwich sandwich = Sandwich(
+        type: type,
+        isFootlong: true,
+        breadType: BreadType.white,
+      );
       DropdownMenuEntry<SandwichType> entry = DropdownMenuEntry<SandwichType>(
         value: type,
         label: sandwich.name,
@@ -130,10 +134,7 @@ class _OrderScreenState extends State<OrderScreen> {
             child: Image.asset('assets/images/logo.png'),
           ),
         ),
-        title: const Text(
-          'Sandwich Counter',
-          style: heading1,
-        ),
+        title: const Text('Sandwich Counter', style: heading1),
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -147,10 +148,7 @@ class _OrderScreenState extends State<OrderScreen> {
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
                     return const Center(
-                      child: Text(
-                        'Image not found',
-                        style: normalText,
-                      ),
+                      child: Text('Image not found', style: normalText),
                     );
                   },
                 ),
@@ -231,6 +229,20 @@ class _OrderScreenState extends State<OrderScreen> {
                 style: normalText,
                 textAlign: TextAlign.center,
               ),
+              const SizedBox(height: 8),
+              Center(
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (BuildContext context) =>
+                            const ProfileScreen(),
+                      ),
+                    );
+                  },
+                  child: const Text('Profile'),
+                ),
+              ),
               const SizedBox(height: 20),
             ],
           ),
@@ -268,13 +280,7 @@ class StyledButton extends StatelessWidget {
     return ElevatedButton(
       onPressed: onPressed,
       style: myButtonStyle,
-      child: Row(
-        children: [
-          Icon(icon),
-          const SizedBox(width: 8),
-          Text(label),
-        ],
-      ),
+      child: Row(children: [Icon(icon), const SizedBox(width: 8), Text(label)]),
     );
   }
 }
