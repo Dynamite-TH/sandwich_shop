@@ -58,88 +58,151 @@ class _CartScreenState extends State<CartScreen> {
             children: [
               const SizedBox(height: 20),
               for (MapEntry<Sandwich, int> entry in widget.cart.items.entries)
-                Column(
-                  children: [
-                    Text(entry.key.name, style: heading2),
-                    Text(
-                      '${_getSizeText(entry.key.isFootlong)} on ${entry.key.breadType.name} bread',
-                      style: normalText,
-                    ),
-                    // Quantity controls: decrement, value, increment
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        IconButton(
-                          tooltip: 'Decrease quantity',
+                Dismissible(
+                  key: ValueKey(entry.key.hashCode),
+                  direction: DismissDirection.endToStart,
+                  onDismissed: (_) {
+                    final removed = entry.key;
+                    final removedQty = entry.value;
+                    setState(() {
+                      widget.cart.remove(removed, quantity: removedQty);
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('${removed.name} removed'),
+                        action: SnackBarAction(
+                          label: 'Undo',
                           onPressed: () {
                             setState(() {
-                              widget.cart.remove(entry.key, quantity: 1);
+                              widget.cart.add(removed, quantity: removedQty);
                             });
                           },
-                          icon: const Icon(Icons.remove_circle_outline),
                         ),
-                        const SizedBox(width: 8),
-                        // Tapping quantity opens numeric input dialog
-                        GestureDetector(
-                          onTap: () async {
-                            final result = await showDialog<int>(
-                              context: context,
-                              builder: (_) => QuantityInputDialog(
-                                initialQuantity: entry.value,
-                              ),
-                            );
-                            if (result != null && result != entry.value) {
+                        duration: const Duration(seconds: 5),
+                      ),
+                    );
+                  },
+                  background: Container(
+                    color: Colors.red,
+                    alignment: Alignment.centerRight,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: const Icon(Icons.delete, color: Colors.white),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(entry.key.name, style: heading2),
+                      Text(
+                        '${_getSizeText(entry.key.isFootlong)} on ${entry.key.breadType.name} bread',
+                        style: normalText,
+                      ),
+                      // Quantity controls: decrement, value, increment, and remove
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            tooltip: 'Decrease quantity',
+                            onPressed: () {
                               setState(() {
-                                if (result > entry.value) {
-                                  widget.cart.add(
-                                    entry.key,
-                                    quantity: result - entry.value,
-                                  );
-                                } else {
-                                  widget.cart.remove(
-                                    entry.key,
-                                    quantity: entry.value - result,
-                                  );
-                                }
+                                widget.cart.remove(entry.key, quantity: 1);
                               });
-                            }
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade200,
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              'Qty: ${entry.value}',
-                              style: normalText,
+                            },
+                            icon: const Icon(Icons.remove_circle_outline),
+                          ),
+                          const SizedBox(width: 8),
+                          // Tapping quantity opens numeric input dialog
+                          GestureDetector(
+                            onTap: () async {
+                              final result = await showDialog<int>(
+                                context: context,
+                                builder: (_) => QuantityInputDialog(
+                                  initialQuantity: entry.value,
+                                ),
+                              );
+                              if (result != null && result != entry.value) {
+                                setState(() {
+                                  if (result > entry.value) {
+                                    widget.cart.add(
+                                      entry.key,
+                                      quantity: result - entry.value,
+                                    );
+                                  } else {
+                                    widget.cart.remove(
+                                      entry.key,
+                                      quantity: entry.value - result,
+                                    );
+                                  }
+                                });
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade200,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                'Qty: ${entry.value}',
+                                style: normalText,
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        IconButton(
-                          tooltip: 'Increase quantity',
-                          onPressed: entry.value >= 99
-                              ? null
-                              : () {
-                                  setState(() {
-                                    widget.cart.add(entry.key, quantity: 1);
-                                  });
-                                },
-                          icon: const Icon(Icons.add_circle_outline),
-                        ),
-                        const SizedBox(width: 16),
-                        Text(
-                          '£${_getItemPrice(entry.key, entry.value).toStringAsFixed(2)}',
-                          style: normalText,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                  ],
+                          const SizedBox(width: 8),
+                          IconButton(
+                            tooltip: 'Increase quantity',
+                            onPressed: entry.value >= 99
+                                ? null
+                                : () {
+                                    setState(() {
+                                      widget.cart.add(entry.key, quantity: 1);
+                                    });
+                                  },
+                            icon: const Icon(Icons.add_circle_outline),
+                          ),
+                          const SizedBox(width: 16),
+                          Text(
+                            '£${_getItemPrice(entry.key, entry.value).toStringAsFixed(2)}',
+                            style: normalText,
+                          ),
+                          const SizedBox(width: 8),
+                          IconButton(
+                            tooltip: 'Remove item',
+                            onPressed: () {
+                              final removed = entry.key;
+                              final removedQty = entry.value;
+                              setState(() {
+                                widget.cart.remove(
+                                  removed,
+                                  quantity: removedQty,
+                                );
+                              });
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('${removed.name} removed'),
+                                  action: SnackBarAction(
+                                    label: 'Undo',
+                                    onPressed: () {
+                                      setState(() {
+                                        widget.cart.add(
+                                          removed,
+                                          quantity: removedQty,
+                                        );
+                                      });
+                                    },
+                                  ),
+                                  duration: const Duration(seconds: 5),
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.delete_outline),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
                 ),
               Text(
                 'Total: £${widget.cart.totalPrice.toStringAsFixed(2)}',
