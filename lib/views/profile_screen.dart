@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:sandwich_shop/views/app_styles.dart';
+import 'package:sandwich_shop/repositories/profile_provider.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -11,10 +13,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  // Saved in-memory values for the session
-  String _savedName = '';
-  String _savedEmail = '';
-  String _savedPhone = '';
+  // Note: profile data is stored in ProfileProvider for the session
 
   // Editing controllers
   late TextEditingController _nameController;
@@ -28,9 +27,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: _savedName);
-    _emailController = TextEditingController(text: _savedEmail);
-    _phoneController = TextEditingController(text: _savedPhone);
+    // Initialize controllers from provider (read once)
+    final provider = Provider.of<ProfileProvider>(context, listen: false);
+    _nameController = TextEditingController(text: provider.name);
+    _emailController = TextEditingController(text: provider.email);
+    _phoneController = TextEditingController(text: provider.phone);
   }
 
   @override
@@ -54,14 +55,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _saveProfile() {
     if (!_formKey.currentState!.validate()) return;
-
+    final provider = Provider.of<ProfileProvider>(context, listen: false);
+    provider.setProfile(
+      name: _nameController.text.trim(),
+      email: _emailController.text.trim(),
+      phone: _phoneController.text.trim(),
+    );
     setState(() {
-      _savedName = _nameController.text.trim();
-      _savedEmail = _emailController.text.trim();
-      _savedPhone = _phoneController.text.trim();
       _isEditing = false;
     });
-
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(const SnackBar(content: Text('Profile saved')));
@@ -69,9 +71,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _cancelEdit() {
     setState(() {
-      _nameController.text = _savedName;
-      _emailController.text = _savedEmail;
-      _phoneController.text = _savedPhone;
+      // reset controllers to provider values
+      final provider = Provider.of<ProfileProvider>(context, listen: false);
+      _nameController.text = provider.name;
+      _emailController.text = provider.email;
+      _phoneController.text = provider.phone;
       _isEditing = false;
     });
   }
@@ -103,8 +107,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildViewMode() {
-    final bool empty =
-        _savedName.isEmpty && _savedEmail.isEmpty && _savedPhone.isEmpty;
+    final provider = Provider.of<ProfileProvider>(context);
+    final bool empty = provider.isEmpty;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -116,7 +120,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         else ...[
           ListTile(
             title: Text(
-              _savedName.isEmpty ? 'Name' : _savedName,
+              provider.name.isEmpty ? 'Name' : provider.name,
               style: heading2,
             ),
             subtitle: const Text('Name'),
@@ -124,7 +128,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const Divider(),
           ListTile(
             title: Text(
-              _savedEmail.isEmpty ? 'Email' : _savedEmail,
+              provider.email.isEmpty ? 'Email' : provider.email,
               style: heading2,
             ),
             subtitle: const Text('Email'),
@@ -132,7 +136,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const Divider(),
           ListTile(
             title: Text(
-              _savedPhone.isEmpty ? 'Phone' : _savedPhone,
+              provider.phone.isEmpty ? 'Phone' : provider.phone,
               style: heading2,
             ),
             subtitle: const Text('Phone'),
