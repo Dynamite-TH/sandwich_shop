@@ -3,6 +3,7 @@ import 'package:sandwich_shop/views/app_styles.dart';
 import 'package:sandwich_shop/models/cart.dart';
 import 'package:sandwich_shop/models/sandwich.dart';
 import 'package:sandwich_shop/repositories/pricing_repository.dart';
+import 'package:sandwich_shop/views/widgets/drawer.dart';
 
 class CheckoutScreen extends StatefulWidget {
   final Cart cart;
@@ -45,7 +46,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   double _calculateItemPrice(Sandwich sandwich, int quantity) {
     PricingRepository repo = PricingRepository();
     return repo.calculatePrice(
-        quantity: quantity, isFootlong: sandwich.isFootlong);
+      quantity: quantity,
+      isFootlong: sandwich.isFootlong,
+    );
   }
 
   @override
@@ -63,14 +66,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       final Widget itemRow = Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            '${quantity}x ${sandwich.name}',
-            style: normalText,
-          ),
-          Text(
-            '£${itemPrice.toStringAsFixed(2)}',
-            style: normalText,
-          ),
+          Text('${quantity}x ${sandwich.name}', style: normalText),
+          Text('£${itemPrice.toStringAsFixed(2)}', style: normalText),
         ],
       );
 
@@ -85,10 +82,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         const Text('Total:', style: heading2),
-        Text(
-          '£${widget.cart.totalPrice.toStringAsFixed(2)}',
-          style: heading2,
-        ),
+        Text('£${widget.cart.totalPrice.toStringAsFixed(2)}', style: heading2),
       ],
     );
     columnChildren.add(totalRow);
@@ -104,11 +98,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     columnChildren.add(const SizedBox(height: 20));
 
     if (_isProcessing) {
-      columnChildren.add(
-        const Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
+      columnChildren.add(const Center(child: CircularProgressIndicator()));
       columnChildren.add(const SizedBox(height: 20));
       columnChildren.add(
         const Text(
@@ -127,15 +117,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Checkout', style: heading1),
-      ),
+      appBar: AppBar(title: const Text('Checkout', style: heading1)),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: Column(
-          children: columnChildren,
-        ),
+        child: Column(children: columnChildren),
       ),
+      drawer: const AppDrawer(),
     );
   }
 }
