@@ -48,85 +48,6 @@ Allow users to change the contents of their cart in common ways:
 
 ---
 
-## 3. Drawer — Reusable Navigation Drawer
-
-Overview
-- Purpose: Provide a reusable, accessible navigation drawer (AppDrawer) that centralises navigation across screens (Home, About, Profile, Cart).
-- Scope: A stateless Drawer widget used by any Scaffold via `drawer: const AppDrawer()`. Uses named routes. Supports programmatic open/close, selection highlighting, graceful handling of missing routes, and automated tests.
-- State: Drawer itself is stateless; shared models (e.g., Cart) must be provided via app-level state (Provider/ChangeNotifier) when needed.
-
-### 3.1 Feature Description
-- UI:
-  - DrawerHeader with logo and app title.
-  - List of navigation items: Home, About, Profile, Cart (extendable).
-  - Uses `ListView` (padding: EdgeInsets.zero) so long lists scroll.
-- Behavior:
-  - Close drawer before navigating (Navigator.pop(context) then Navigator.pushNamed).
-  - Use `Navigator.pushNamed` for navigation; handle missing routes gracefully (log or show SnackBar).
-  - Highlight currently active route (compare `ModalRoute.of(context)?.settings.name`).
-  - Allow programmatic open via `ScaffoldState.openDrawer()` or `scaffoldKey`.
-
-### 3.2 Subtasks
-1. Implement `AppDrawer` widget at `lib/views/widgets/drawer.dart` (stateless).
-2. Register named routes in `MaterialApp` for `'/'`, `'/about'`, `'/profile'`, `'/cart'`.
-3. Replace screen-specific drawers with `AppDrawer` where applicable (OrderScreen, CartScreen, AboutScreen, ProfileScreen).
-4. Add AppBar action or expose `scaffoldKey` on screens that override AppBar leading so drawer can open programmatically.
-5. Implement selected/highlight logic using current `ModalRoute` name.
-6. Add semantic labels and keyboard navigation support.
-7. Add graceful handling for unregistered routes (non-crashing fallback, optional SnackBar).
-8. Add widget and integration tests (see 3.6).
-
-### 3.3 User Stories
-- As a user, I want a consistent navigation panel to reach About and Profile from any main screen.
-- As a developer, I want a single reusable Drawer widget to avoid duplicating navigation code.
-- As a user, I want the drawer to close automatically before navigation.
-- As an accessibility user, I want clear labels and keyboard-focusable items.
-
-### 3.4 Acceptance Criteria
-- [AC-DR-1] `AppDrawer` exists as a reusable widget and is used in applicable screens.
-- [AC-DR-2] Tapping Home/About/Profile/Cart closes drawer and navigates to the correct named route.
-- [AC-DR-3] Drawer highlights the active route's item.
-- [AC-DR-4] Drawer can be opened programmatically via `Scaffold.of(context).openDrawer()` or `scaffoldKey`.
-- [AC-DR-5] DrawerHeader displays logo and title; missing asset does not crash the app.
-- [AC-DR-6] Each ListTile includes a semanticLabel and meets touch-target guidelines.
-- [AC-DR-7] Drawer works with keyboard navigation and screen readers.
-- [AC-DR-8] New items can be added without changing consumers.
-- [AC-DR-9] Widget tests cover rendering, navigation, close-before-navigate behavior.
-- [AC-DR-10] Integration test verifies drawer works across at least two screens.
-
-### 3.5 Edge Cases & Validation Rules
-- Missing named route: do not crash; log and optionally show SnackBar; close drawer.
-- Navigating to current route: close drawer and do not push a duplicate route.
-- Programmatic open without `scaffoldKey`: no-op and must not throw.
-- Long navigation lists: Drawer must scroll (use `ListView`).
-
-### 3.6 Test Requirements
-- Widget tests:
-  - Render `AppDrawer` and assert header and items present.
-  - Tapping each ListTile calls `Navigator.pushNamed` with expected route (use `NavigatorObserver`).
-  - Drawer closes before navigation (`pumpAndSettle` confirms drawer not visible).
-  - Highlight logic selects correct ListTile for current route.
-- Integration tests:
-  - Open drawer programmatically and via AppBar action across multiple screens and assert navigation.
-  - Simulate missing route and ensure app does not crash; optional SnackBar check.
-- Accessibility tests:
-  - Verify semantics labels and focus order.
-
-### 3.7 Implementation Notes
-- Prefer `Navigator.pushNamed` to keep `AppDrawer` decoupled from per-screen state.
-- For shared models (Cart), use app-level state (Provider) at destination routes instead of passing via drawer.
-- Keep `AppDrawer` stateless; read dynamic data (user name, badges) from Provider or allow optional constructor params.
-- Ensure Drawer consumers expose a `scaffoldKey` when programmatic opening is required.
-- Manual set: numeric modal enforces integer between 1 and max (default 99). Confirm updates quantity, totals, and persists. Cancel leaves quantity unchanged.
-- Remove: trash icon and swipe-to-delete both remove item; show Undo snackbar for 5 seconds that restores item exactly.
-- Edit customizations:
-  - Edit opens customization screen prefilled.
-  - Saving applies price change and updates subtotal and grand total.
-  - If edited item equals another cart row (same productId + identical serialized options), merge rows by summing quantities and remove duplicate row.
-- Save for later: moves item out of cart into saved list; totals update; saved list persists.
-- UI responsiveness: no jank; ListView.builder used; no duplicate updates; atomic ChangeNotifier updates.
-- Persistence: cart and saved lists persist and restore on app restart.
-
 ### 1.5 Edge Cases & Validation Rules
 - Max quantity enforced (configurable, default 99). + disabled when reached.
 - Manual input rejects non-integers, negative numbers, zeros (unless chosen behavior allows zero → remove).
@@ -273,4 +194,81 @@ Subtask 8 — Accessibility & QA
 - Validation logic and unit tests.
 - Documentation of manual test steps for QA.
 
-# 3. Drawer for navegation
+## 3. Drawer — Reusable Navigation Drawer
+
+Overview
+- Purpose: Provide a reusable, accessible navigation drawer (AppDrawer) that centralises navigation across screens (Home, About, Profile, Cart).
+- Scope: A stateless Drawer widget used by any Scaffold via `drawer: const AppDrawer()`. Uses named routes. Supports programmatic open/close, selection highlighting, graceful handling of missing routes, and automated tests.
+- State: Drawer itself is stateless; shared models (e.g., Cart) must be provided via app-level state (Provider/ChangeNotifier) when needed.
+
+### 3.1 Feature Description
+- UI:
+  - DrawerHeader with logo and app title.
+  - List of navigation items: Home, About, Profile, Cart (extendable).
+  - Uses `ListView` (padding: EdgeInsets.zero) so long lists scroll.
+- Behavior:
+  - Close drawer before navigating (Navigator.pop(context) then Navigator.pushNamed).
+  - Use `Navigator.pushNamed` for navigation; handle missing routes gracefully (log or show SnackBar).
+  - Highlight currently active route (compare `ModalRoute.of(context)?.settings.name`).
+  - Allow programmatic open via `ScaffoldState.openDrawer()` or `scaffoldKey`.
+
+### 3.2 Subtasks
+1. Implement `AppDrawer` widget at `lib/views/widgets/drawer.dart` (stateless).
+2. Register named routes in `MaterialApp` for `'/'`, `'/about'`, `'/profile'`, `'/cart'`.
+3. Replace screen-specific drawers with `AppDrawer` where applicable (OrderScreen, CartScreen, AboutScreen, ProfileScreen).
+4. Add AppBar action or expose `scaffoldKey` on screens that override AppBar leading so drawer can open programmatically.
+5. Implement selected/highlight logic using current `ModalRoute` name.
+6. Add semantic labels and keyboard navigation support.
+7. Add graceful handling for unregistered routes (non-crashing fallback, optional SnackBar).
+8. Add widget and integration tests (see 3.6).
+
+### 3.3 User Stories
+- As a user, I want a consistent navigation panel to reach About and Profile from any main screen.
+- As a developer, I want a single reusable Drawer widget to avoid duplicating navigation code.
+- As a user, I want the drawer to close automatically before navigation.
+- As an accessibility user, I want clear labels and keyboard-focusable items.
+
+### 3.4 Acceptance Criteria
+- [AC-DR-1] `AppDrawer` exists as a reusable widget and is used in applicable screens.
+- [AC-DR-2] Tapping Home/About/Profile/Cart closes drawer and navigates to the correct named route.
+- [AC-DR-3] Drawer highlights the active route's item.
+- [AC-DR-4] Drawer can be opened programmatically via `Scaffold.of(context).openDrawer()` or `scaffoldKey`.
+- [AC-DR-5] DrawerHeader displays logo and title; missing asset does not crash the app.
+- [AC-DR-6] Each ListTile includes a semanticLabel and meets touch-target guidelines.
+- [AC-DR-7] Drawer works with keyboard navigation and screen readers.
+- [AC-DR-8] New items can be added without changing consumers.
+- [AC-DR-9] Widget tests cover rendering, navigation, close-before-navigate behavior.
+- [AC-DR-10] Integration test verifies drawer works across at least two screens.
+
+### 3.5 Edge Cases & Validation Rules
+- Missing named route: do not crash; log and optionally show SnackBar; close drawer.
+- Navigating to current route: close drawer and do not push a duplicate route.
+- Programmatic open without `scaffoldKey`: no-op and must not throw.
+- Long navigation lists: Drawer must scroll (use `ListView`).
+
+### 3.6 Test Requirements
+- Widget tests:
+  - Render `AppDrawer` and assert header and items present.
+  - Tapping each ListTile calls `Navigator.pushNamed` with expected route (use `NavigatorObserver`).
+  - Drawer closes before navigation (`pumpAndSettle` confirms drawer not visible).
+  - Highlight logic selects correct ListTile for current route.
+- Integration tests:
+  - Open drawer programmatically and via AppBar action across multiple screens and assert navigation.
+  - Simulate missing route and ensure app does not crash; optional SnackBar check.
+- Accessibility tests:
+  - Verify semantics labels and focus order.
+
+### 3.7 Implementation Notes
+- Prefer `Navigator.pushNamed` to keep `AppDrawer` decoupled from per-screen state.
+- For shared models (Cart), use app-level state (Provider) at destination routes instead of passing via drawer.
+- Keep `AppDrawer` stateless; read dynamic data (user name, badges) from Provider or allow optional constructor params.
+- Ensure Drawer consumers expose a `scaffoldKey` when programmatic opening is required.
+- Manual set: numeric modal enforces integer between 1 and max (default 99). Confirm updates quantity, totals, and persists. Cancel leaves quantity unchanged.
+- Remove: trash icon and swipe-to-delete both remove item; show Undo snackbar for 5 seconds that restores item exactly.
+- Edit customizations:
+  - Edit opens customization screen prefilled.
+  - Saving applies price change and updates subtotal and grand total.
+  - If edited item equals another cart row (same productId + identical serialized options), merge rows by summing quantities and remove duplicate row.
+- Save for later: moves item out of cart into saved list; totals update; saved list persists.
+- UI responsiveness: no jank; ListView.builder used; no duplicate updates; atomic ChangeNotifier updates.
+- Persistence: cart and saved lists persist and restore on app restart.
