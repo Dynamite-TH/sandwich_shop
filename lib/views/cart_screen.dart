@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:sandwich_shop/views/app_styles.dart';
 import 'package:sandwich_shop/views/order_screen.dart';
 import 'package:sandwich_shop/models/cart.dart';
 import 'package:sandwich_shop/models/sandwich.dart';
 import 'package:sandwich_shop/repositories/pricing_repository.dart';
-import 'package:sandwich_shop/views/quantity_modal.dart';
 import 'package:sandwich_shop/views/checkout_screen.dart';
 
 class CartScreen extends StatefulWidget {
-  final Cart cart;
-
-  const CartScreen({super.key, required this.cart});
+  const CartScreen({super.key});
 
   @override
   State<CartScreen> createState() {
@@ -20,7 +18,9 @@ class CartScreen extends StatefulWidget {
 
 class _CartScreenState extends State<CartScreen> {
   Future<void> _navigateToCheckout() async {
-    if (widget.cart.items.isEmpty) {
+    final Cart cart = Provider.of<Cart>(context, listen: false);
+
+    if (cart.items.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Your cart is empty'),
@@ -33,23 +33,20 @@ class _CartScreenState extends State<CartScreen> {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => CheckoutScreen(cart: widget.cart),
+        builder: (context) => const CheckoutScreen(),
       ),
     );
 
     if (result != null && mounted) {
-      setState(() {
-        widget.cart.clear();
-      });
+      cart.clear();
 
       final String orderId = result['orderId'] as String;
       final String estimatedTime = result['estimatedTime'] as String;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'Order $orderId confirmed! Estimated time: $estimatedTime',
-          ),
+          content:
+              Text('Order $orderId confirmed! Estimated time: $estimatedTime'),
           duration: const Duration(seconds: 4),
           backgroundColor: Colors.green,
         ),
@@ -57,10 +54,6 @@ class _CartScreenState extends State<CartScreen> {
 
       Navigator.pop(context);
     }
-  }
-
-  void _goBack() {
-    Navigator.pop(context);
   }
 
   String _getSizeText(bool isFootlong) {
@@ -79,6 +72,37 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
+  void _incrementQuantity(Sandwich sandwich) {
+    final Cart cart = Provider.of<Cart>(context, listen: false);
+    cart.add(sandwich, quantity: 1);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Quantity increased')),
+    );
+  }
+
+  void _decrementQuantity(Sandwich sandwich) {
+    final Cart cart = Provider.of<Cart>(context, listen: false);
+    final wasPresent = cart.items.containsKey(sandwich);
+    cart.remove(sandwich, quantity: 1);
+    if (!cart.items.containsKey(sandwich) && wasPresent) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Item removed from cart')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Quantity decreased')),
+      );
+    }
+  }
+
+  void _removeItem(Sandwich sandwich) {
+    final Cart cart = Provider.of<Cart>(context, listen: false);
+    cart.remove(sandwich, quantity: cart.getQuantity(sandwich));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Item removed from cart')),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -90,247 +114,113 @@ class _CartScreenState extends State<CartScreen> {
             child: Image.asset('assets/images/logo.png'),
           ),
         ),
-        title: const Text('Cart View', style: heading1),
+        title: const Text(
+          'Cart View',
+          style: heading1,
+        ),
+        actions: [
+          Consumer<Cart>(
+            builder: (context, cart, child) {
+              return Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.shopping_cart),
+                    const SizedBox(width: 4),
+                    Text('${cart.countOfItems}'),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: Center(
         child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 20),
-              if (widget.cart.isEmpty)
-                Column(
-                  children: const [
-                    SizedBox(height: 40),
-                    Icon(
-                      Icons.shopping_cart_outlined,
-                      size: 64,
-                      color: Colors.grey,
-                    ),
-                    SizedBox(height: 12),
-                    Text(
-                      'Your cart is empty',
-                      style: TextStyle(fontSize: 18, color: Colors.grey),
-                    ),
-                    SizedBox(height: 20),
-                  ],
-                )
-              else
-                for (MapEntry<Sandwich, int> entry in widget.cart.items.entries)
-                  Dismissible(
-                    key: ValueKey(entry.key.hashCode),
-                    direction: DismissDirection.endToStart,
-                    onDismissed: (_) {
-                      final removed = entry.key;
-                      final removedQty = entry.value;
-                      setState(() {
-                        widget.cart.remove(removed, quantity: removedQty);
-                      });
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('${removed.name} removed'),
-                          action: SnackBarAction(
-                            label: 'Undo',
-                            onPressed: () {
-                              setState(() {
-                                widget.cart.add(removed, quantity: removedQty);
-                              });
-                            },
+          child: Consumer<Cart>(
+            builder: (context, cart, child) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 20),
+                  if (cart.items.isEmpty)
+                    const Text(
+                      'Your cart is empty.',
+                      style: heading2,
+                      textAlign: TextAlign.center,
+                    )
+                  else
+                    for (MapEntry<Sandwich, int> entry in cart.items.entries)
+                      Column(
+                        children: [
+                          Text(entry.key.name, style: heading2),
+                          Text(
+                            '${_getSizeText(entry.key.isFootlong)} on ${entry.key.breadType.name} bread',
+                            style: normalText,
                           ),
-                          duration: const Duration(seconds: 5),
-                        ),
-                      );
-                    },
-                    background: Container(
-                      color: Colors.red,
-                      alignment: Alignment.centerRight,
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: const Icon(Icons.delete, color: Colors.white),
-                    ),
-                    child: Column(
-                      children: [
-                        Text(entry.key.name, style: heading2),
-                        Text(
-                          '${_getSizeText(entry.key.isFootlong)} on ${entry.key.breadType.name} bread',
-                          style: normalText,
-                        ),
-                        // Quantity controls: decrement, value, increment, and remove
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            IconButton(
-                              tooltip: 'Decrease quantity',
-                              onPressed: () {
-                                final prevQty = entry.value;
-                                setState(() {
-                                  widget.cart.remove(entry.key, quantity: 1);
-                                });
-                                if (prevQty > 1) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Quantity updated'),
-                                      duration: Duration(milliseconds: 800),
-                                    ),
-                                  );
-                                } else {
-                                  // prevQty == 1 -> item removed
-                                  final removed = entry.key;
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('${removed.name} removed'),
-                                      action: SnackBarAction(
-                                        label: 'Undo',
-                                        onPressed: () {
-                                          setState(() {
-                                            widget.cart.add(
-                                              removed,
-                                              quantity: 1,
-                                            );
-                                          });
-                                        },
-                                      ),
-                                      duration: const Duration(seconds: 5),
-                                    ),
-                                  );
-                                }
-                              },
-                              icon: const Icon(Icons.remove_circle_outline),
-                            ),
-                            const SizedBox(width: 8),
-                            // Tapping quantity opens numeric input dialog
-                            GestureDetector(
-                              onTap: () async {
-                                final result = await showDialog<int>(
-                                  context: context,
-                                  builder: (_) => QuantityInputDialog(
-                                    initialQuantity: entry.value,
-                                  ),
-                                );
-                                if (result != null && result != entry.value) {
-                                  setState(() {
-                                    if (result > entry.value) {
-                                      widget.cart.add(
-                                        entry.key,
-                                        quantity: result - entry.value,
-                                      );
-                                    } else {
-                                      widget.cart.remove(
-                                        entry.key,
-                                        quantity: entry.value - result,
-                                      );
-                                    }
-                                  });
-                                }
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey.shade200,
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  'Qty: ${entry.value}',
-                                  style: normalText,
-                                ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.remove),
+                                onPressed: () => _decrementQuantity(entry.key),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            IconButton(
-                              tooltip: 'Increase quantity',
-                              onPressed: entry.value >= 99
-                                  ? null
-                                  : () {
-                                      setState(() {
-                                        widget.cart.add(entry.key, quantity: 1);
-                                      });
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        const SnackBar(
-                                          content: Text('Quantity updated'),
-                                          duration: Duration(milliseconds: 800),
-                                        ),
-                                      );
-                                    },
-                              icon: const Icon(Icons.add_circle_outline),
-                            ),
-                            const SizedBox(width: 16),
-                            Text(
-                              '£${_getItemPrice(entry.key, entry.value).toStringAsFixed(2)}',
-                              style: normalText,
-                            ),
-                            const SizedBox(width: 8),
-                            IconButton(
-                              tooltip: 'Remove item',
-                              onPressed: () {
-                                final removed = entry.key;
-                                final removedQty = entry.value;
-                                setState(() {
-                                  widget.cart.remove(
-                                    removed,
-                                    quantity: removedQty,
-                                  );
-                                });
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('${removed.name} removed'),
-                                    action: SnackBarAction(
-                                      label: 'Undo',
-                                      onPressed: () {
-                                        setState(() {
-                                          widget.cart.add(
-                                            removed,
-                                            quantity: removedQty,
-                                          );
-                                        });
-                                      },
-                                    ),
-                                    duration: const Duration(seconds: 5),
-                                  ),
-                                );
-                              },
-                              icon: const Icon(Icons.delete_outline),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-                      ],
-                    ),
+                              Text(
+                                'Qty: ${entry.value}',
+                                style: normalText,
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.add),
+                                onPressed: () => _incrementQuantity(entry.key),
+                              ),
+                              const SizedBox(width: 16),
+                              Text(
+                                '£${_getItemPrice(entry.key, entry.value).toStringAsFixed(2)}',
+                                style: normalText,
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete),
+                                tooltip: 'Remove item',
+                                onPressed: () => _removeItem(entry.key),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+                        ],
+                      ),
+                  Text(
+                    'Total: £${cart.totalPrice.toStringAsFixed(2)}',
+                    style: heading2,
+                    textAlign: TextAlign.center,
                   ),
-              const SizedBox(height: 20),
-              Builder(
-                builder: (BuildContext context) {
-                  final bool cartHasItems = widget.cart.items.isNotEmpty;
-                  if (cartHasItems) {
-                    return StyledButton(
-                      onPressed: _navigateToCheckout,
-                      icon: Icons.payment,
-                      label: 'Checkout',
-                      backgroundColor: Colors.orange,
-                    );
-                  } else {
-                    return const SizedBox.shrink();
-                  }
-                },
-              ),
-              const SizedBox(height: 20),
-              Text(
-                'Total: £${widget.cart.totalPrice.toStringAsFixed(2)}',
-                style: heading2,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              StyledButton(
-                onPressed: _goBack,
-                icon: Icons.arrow_back,
-                label: 'Back to Order',
-                backgroundColor: Colors.grey,
-              ),
-              const SizedBox(height: 20),
-            ],
+                  const SizedBox(height: 20),
+                  Builder(
+                    builder: (BuildContext context) {
+                      final bool cartHasItems = cart.items.isNotEmpty;
+                      if (cartHasItems) {
+                        return StyledButton(
+                          onPressed: _navigateToCheckout,
+                          icon: Icons.payment,
+                          label: 'Checkout',
+                          backgroundColor: Colors.orange,
+                        );
+                      } else {
+                        return const SizedBox.shrink();
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  StyledButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icons.arrow_back,
+                    label: 'Back to Order',
+                    backgroundColor: Colors.grey,
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              );
+            },
           ),
         ),
       ),
