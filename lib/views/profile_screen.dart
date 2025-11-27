@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:sandwich_shop/views/app_styles.dart';
-import 'package:sandwich_shop/repositories/profile_provider.dart';
-import 'package:sandwich_shop/views/widgets/drawer.dart';
+import 'package:provider/provider.dart';
+import 'package:sandwich_shop/models/cart.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -12,206 +11,76 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  final _formKey = GlobalKey<FormState>();
-
-  // Note: profile data is stored in ProfileProvider for the session
-
-  // Editing controllers
-  late TextEditingController _nameController;
-  late TextEditingController _emailController;
-  late TextEditingController _phoneController;
-
-  final FocusNode _nameFocus = FocusNode();
-
-  bool _isEditing = false;
-
-  @override
-  void initState() {
-    super.initState();
-    // Initialize controllers from provider (read once)
-    final provider = Provider.of<ProfileProvider>(context, listen: false);
-    _nameController = TextEditingController(text: provider.name);
-    _emailController = TextEditingController(text: provider.email);
-    _phoneController = TextEditingController(text: provider.phone);
-  }
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _locationController = TextEditingController();
 
   @override
   void dispose() {
     _nameController.dispose();
-    _emailController.dispose();
-    _phoneController.dispose();
-    _nameFocus.dispose();
+    _locationController.dispose();
     super.dispose();
   }
 
-  void _enterEditMode() {
-    setState(() {
-      _isEditing = true;
-    });
-    // focus after a short delay to ensure widgets are rendered
-    Future.delayed(const Duration(milliseconds: 100), () {
-      _nameFocus.requestFocus();
-    });
-  }
-
   void _saveProfile() {
-    if (!_formKey.currentState!.validate()) return;
-    final provider = Provider.of<ProfileProvider>(context, listen: false);
-    provider.setProfile(
-      name: _nameController.text.trim(),
-      email: _emailController.text.trim(),
-      phone: _phoneController.text.trim(),
-    );
-    setState(() {
-      _isEditing = false;
-    });
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Profile saved')));
-  }
+    final String name = _nameController.text.trim();
+    final String location = _locationController.text.trim();
 
-  void _cancelEdit() {
-    setState(() {
-      // reset controllers to provider values
-      final provider = Provider.of<ProfileProvider>(context, listen: false);
-      _nameController.text = provider.name;
-      _emailController.text = provider.email;
-      _phoneController.text = provider.phone;
-      _isEditing = false;
-    });
-  }
+    final bool nameIsNotEmpty = name.isNotEmpty;
+    final bool locationIsNotEmpty = location.isNotEmpty;
+    final bool bothFieldsFilled = nameIsNotEmpty && locationIsNotEmpty;
 
-  String? _validateName(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'Name is required';
+    if (bothFieldsFilled) {
+      _returnProfileData(name, location);
+    } else {
+      _showValidationError();
     }
-    return null;
   }
 
-  String? _validateEmail(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'Email is required';
-    }
-    final email = value.trim();
-    final emailRegex = RegExp(r"^[^\s@]+@[^\s@]+\.[^\s@]+$");
-    if (!emailRegex.hasMatch(email)) {
-      return 'Enter a valid email';
-    }
-    return null;
+  void _returnProfileData(String name, String location) {
+    final Map<String, String> profileData = {
+      'name': name,
+      'location': location,
+    };
+    Navigator.pop(context, profileData);
   }
 
-  String? _validatePhone(String? value) {
-    if (value == null || value.isEmpty) return null; // optional
-    final phoneRegex = RegExp(r'^[0-9+\-\s()]*$');
-    if (!phoneRegex.hasMatch(value)) return 'Invalid phone number';
-    return null;
-  }
-
-  Widget _buildViewMode() {
-    final provider = Provider.of<ProfileProvider>(context);
-    final bool empty = provider.isEmpty;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (empty)
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text('Complete your profile', style: normalText),
-          )
-        else ...[
-          ListTile(
-            title: Text(
-              provider.name.isEmpty ? 'Name' : provider.name,
-              style: heading2,
-            ),
-            subtitle: const Text('Name'),
-          ),
-          const Divider(),
-          ListTile(
-            title: Text(
-              provider.email.isEmpty ? 'Email' : provider.email,
-              style: heading2,
-            ),
-            subtitle: const Text('Email'),
-          ),
-          const Divider(),
-          ListTile(
-            title: Text(
-              provider.phone.isEmpty ? 'Phone' : provider.phone,
-              style: heading2,
-            ),
-            subtitle: const Text('Phone'),
-          ),
-        ],
-        const SizedBox(height: 16),
-        ElevatedButton(onPressed: _enterEditMode, child: const Text('Edit')),
-      ],
+  void _showValidationError() {
+    const SnackBar validationSnackBar = SnackBar(
+      content: Text('Please fill in all fields'),
+      duration: Duration(seconds: 2),
     );
-  }
-
-  Widget _buildEditMode() {
-    return Form(
-      key: _formKey,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          TextFormField(
-            controller: _nameController,
-            focusNode: _nameFocus,
-            decoration: const InputDecoration(labelText: 'Name'),
-            validator: _validateName,
-            textInputAction: TextInputAction.next,
-          ),
-          const SizedBox(height: 12),
-          TextFormField(
-            controller: _emailController,
-            decoration: const InputDecoration(labelText: 'Email'),
-            validator: _validateEmail,
-            keyboardType: TextInputType.emailAddress,
-            textInputAction: TextInputAction.next,
-          ),
-          const SizedBox(height: 12),
-          TextFormField(
-            controller: _phoneController,
-            decoration: const InputDecoration(labelText: 'Phone (optional)'),
-            validator: _validatePhone,
-            keyboardType: TextInputType.phone,
-            textInputAction: TextInputAction.done,
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: _saveProfile,
-                  child: const Text('Save'),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: _cancelEdit,
-                  child: const Text('Cancel'),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(validationSnackBar);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Profile')),
-      drawer: const AppDrawer(),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [_isEditing ? _buildEditMode() : _buildViewMode()],
+      appBar: AppBar(
+        leading: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: SizedBox(
+            height: 100,
+            child: Image.asset('assets/images/logo.png'),
+          ),
         ),
+        title: const Text('Profile', style: heading1),
+        actions: [
+          Consumer<Cart>(
+            builder: (context, cart, child) {
+              return Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.shopping_cart),
+                    const SizedBox(width: 4),
+                    Text('${cart.countOfItems}'),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
