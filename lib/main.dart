@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:sandwich_shop/views/order_screen.dart';
 import 'package:provider/provider.dart';
-import 'package:sandwich_shop/views/about_screen.dart';
-import 'package:sandwich_shop/views/profile_screen.dart';
-import 'package:sandwich_shop/repositories/profile_provider.dart';
+import 'package:sandwich_shop/models/cart.dart';
+import 'package:sandwich_shop/views/order_screen.dart';
 
 void main() {
   runApp(const App());
@@ -15,15 +13,13 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => ProfileProvider(),
-      child: MaterialApp(
+      create: (BuildContext context) {
+        return Cart();
+      },
+      child: const MaterialApp(
         title: 'Sandwich Shop App',
+        debugShowCheckedModeBanner: false,
         home: OrderScreen(maxQuantity: 5),
-        initialRoute: '/',
-        routes: {
-          '/about': (context) => AboutScreen(),
-          '/profile': (context) => ProfileScreen(),
-        },
       ),
     );
   }
