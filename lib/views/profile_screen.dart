@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sandwich_shop/views/app_styles.dart';
 import 'package:provider/provider.dart';
 import 'package:sandwich_shop/models/cart.dart';
+import 'package:sandwich_shop/views/widgets/drawer.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -63,7 +64,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Image.asset('assets/images/logo.png'),
           ),
         ),
-        title: const Text('Profile', style: heading1),
+        title: Text('Profile', style: heading1),
         actions: [
           Consumer<Cart>(
             builder: (context, cart, child) {
@@ -82,6 +83,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ],
       ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              controller: _nameController,
+              decoration: const InputDecoration(
+                labelText: 'Name',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _locationController,
+              decoration: const InputDecoration(
+                labelText: 'Location',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Center(
+              child: ElevatedButton(
+                onPressed: _saveProfile,
+                child: const Text('Save Profile'),
+              ),
+            ),
+          ],
+        ),
+      ),
+      drawer: const AppDrawer(),
     );
   }
 }

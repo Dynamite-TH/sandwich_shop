@@ -6,6 +6,7 @@ import 'package:sandwich_shop/models/cart.dart';
 import 'package:sandwich_shop/models/sandwich.dart';
 import 'package:sandwich_shop/views/widgets/drawer.dart';
 import 'package:provider/provider.dart';
+import 'package:sandwich_shop/views/setting_screen.dart';
 
 class OrderScreen extends StatefulWidget {
   final int maxQuantity;
@@ -43,11 +44,11 @@ class _OrderScreenState extends State<OrderScreen> {
   Future<void> _navigateToProfile() async {
     final Map<String, String>? result =
         await Navigator.push<Map<String, String>>(
-      context,
-      MaterialPageRoute<Map<String, String>>(
-        builder: (BuildContext context) => const ProfileScreen(),
-      ),
-    );
+          context,
+          MaterialPageRoute<Map<String, String>>(
+            builder: (BuildContext context) => const ProfileScreen(),
+          ),
+        );
 
     final bool hasResult = result != null;
     final bool widgetStillMounted = mounted;
@@ -115,11 +116,23 @@ class _OrderScreenState extends State<OrderScreen> {
     );
   }
 
+  void _navigateToSettings() {
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) => const SettingsScreen(),
+      ),
+    );
+  }
+
   List<DropdownMenuEntry<SandwichType>> _buildSandwichTypeEntries() {
     List<DropdownMenuEntry<SandwichType>> entries = [];
     for (SandwichType type in SandwichType.values) {
-      Sandwich sandwich =
-          Sandwich(type: type, isFootlong: true, breadType: BreadType.white);
+      Sandwich sandwich = Sandwich(
+        type: type,
+        isFootlong: true,
+        breadType: BreadType.white,
+      );
       DropdownMenuEntry<SandwichType> entry = DropdownMenuEntry<SandwichType>(
         value: type,
         label: sandwich.name,
@@ -161,10 +174,7 @@ class _OrderScreenState extends State<OrderScreen> {
             child: Image.asset('assets/images/logo.png'),
           ),
         ),
-        title: const Text(
-          'Sandwich Counter',
-          style: heading1,
-        ),
+        title: Text('Sandwich Counter', style: AppStyles.heading1),
         actions: [
           Consumer<Cart>(
             builder: (context, cart, child) {
@@ -183,6 +193,7 @@ class _OrderScreenState extends State<OrderScreen> {
           ),
         ],
       ),
+      drawer: const AppDrawer(),
       body: Center(
         child: SingleChildScrollView(
           child: Column(
@@ -194,11 +205,8 @@ class _OrderScreenState extends State<OrderScreen> {
                   _getCurrentImagePath(),
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
-                    return const Center(
-                      child: Text(
-                        'Image not found',
-                        style: normalText,
-                      ),
+                    return  Center(
+                      child: Text('Image not found', style: normalText),
                     );
                   },
                 ),
@@ -220,12 +228,12 @@ class _OrderScreenState extends State<OrderScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('Six-inch', style: normalText),
+                   Text('Six-inch', style: normalText),
                   Switch(
                     value: _isFootlong,
                     onChanged: (value) => setState(() => _isFootlong = value),
                   ),
-                  const Text('Footlong', style: normalText),
+                   Text('Footlong', style: normalText),
                 ],
               ),
               const SizedBox(height: 20),
@@ -245,7 +253,7 @@ class _OrderScreenState extends State<OrderScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('Quantity: ', style: normalText),
+                  Text('Quantity: ', style: normalText),
                   IconButton(
                     onPressed: _quantity > 0
                         ? () => setState(() => _quantity--)
@@ -327,13 +335,7 @@ class StyledButton extends StatelessWidget {
     return ElevatedButton(
       onPressed: onPressed,
       style: myButtonStyle,
-      child: Row(
-        children: [
-          Icon(icon),
-          const SizedBox(width: 8),
-          Text(label),
-        ],
-      ),
+      child: Row(children: [Icon(icon), const SizedBox(width: 8), Text(label)]),
     );
   }
 }
