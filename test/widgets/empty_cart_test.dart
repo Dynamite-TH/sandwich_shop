@@ -7,8 +7,8 @@ void main() {
   testWidgets('shows empty cart placeholder when cart is empty', (
     WidgetTester tester,
   ) async {
-    final cart = Cart();
-    await tester.pumpWidget(MaterialApp(home: CartScreen(cart: cart)));
+    // empty cart
+    await tester.pumpWidget(MaterialApp(home: CartScreen()));
     await tester.pumpAndSettle();
 
     expect(find.text('Your cart is empty'), findsOneWidget);

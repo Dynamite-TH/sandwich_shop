@@ -1,44 +1,59 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:sandwich_shop/repositories/profile_provider.dart';
 import 'package:sandwich_shop/views/profile_screen.dart';
+import 'package:sandwich_shop/models/cart.dart';
 
 void main() {
-  testWidgets('ProfileScreen view and edit flow', (WidgetTester tester) async {
-    final provider = ProfileProvider();
+  testWidgets('ProfileScreen save returns entered data', (
+    WidgetTester tester,
+  ) async {
+    // Will hold the popped result from ProfileScreen
+    final resultNotifier = ValueNotifier<Map<String, String>?>(null);
 
     await tester.pumpWidget(
-      ChangeNotifierProvider<ProfileProvider>.value(
-        value: provider,
-        child: const MaterialApp(home: ProfileScreen()),
+      ChangeNotifierProvider<Cart>(
+        create: (_) => Cart(),
+        child: MaterialApp(
+          home: Builder(
+            builder: (context) {
+              return Scaffold(
+                body: Center(
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      final res = await Navigator.of(context)
+                          .push<Map<String, String>>(
+                            MaterialPageRoute(
+                              builder: (_) => const ProfileScreen(),
+                            ),
+                          );
+                      resultNotifier.value = res;
+                    },
+                    child: const Text('open'),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
       ),
     );
 
-    // initial view shows app bar and Edit button
-    expect(find.text('Profile'), findsOneWidget);
-    expect(find.text('Edit'), findsOneWidget);
-
-    // enter edit mode
-    await tester.tap(find.text('Edit'));
+    // open the profile screen
+    await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
 
-    // should show text fields for name and email
-    expect(find.byType(TextFormField), findsNWidgets(3));
+    // enter name and location
+    await tester.enterText(find.byType(TextField).at(0), 'Alice');
+    await tester.enterText(find.byType(TextField).at(1), 'Wonderland');
 
-    // enter values and save
-    final nameField = find.byType(TextFormField).at(0);
-    final emailField = find.byType(TextFormField).at(1);
-
-    await tester.enterText(nameField, 'Alice');
-    await tester.enterText(emailField, 'alice@example.com');
-
-    await tester.tap(find.text('Save'));
+    // save and pop
+    await tester.tap(find.text('Save Profile'));
     await tester.pumpAndSettle();
 
-    // snackbar shown and view mode restored
-    expect(find.text('Profile saved'), findsOneWidget);
-    // provider should have updated name
-    expect(provider.name, 'Alice');
+    // dialog/screen dismissed and notifier holds the returned map
+    expect(resultNotifier.value, isNotNull);
+    expect(resultNotifier.value!['name'], 'Alice');
+    expect(resultNotifier.value!['location'], 'Wonderland');
   });
 }

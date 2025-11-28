@@ -86,7 +86,7 @@ class _TestHarnessState extends State<TestHarness> {
               onPressed: () async {
                 final res = await Navigator.of(context).push<Map>(
                   MaterialPageRoute(
-                    builder: (_) => CheckoutScreen(cart: widget.cart),
+                    builder: (_) => CheckoutScreen(),
                   ),
                 );
                 if (res != null) {

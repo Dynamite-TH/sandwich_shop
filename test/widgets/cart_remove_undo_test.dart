@@ -22,7 +22,7 @@ void main() {
     testWidgets('tap delete removes item and undo restores it', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(MaterialApp(home: CartScreen(cart: cart)));
+      await tester.pumpWidget(MaterialApp(home: CartScreen()));
       await tester.pumpAndSettle();
 
       // ensure item present

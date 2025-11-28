@@ -22,7 +22,7 @@ void main() {
     testWidgets('tapping + increases quantity and updates total', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(MaterialApp(home: CartScreen(cart: cart)));
+      await tester.pumpWidget(MaterialApp(home: CartScreen()));
       await tester.pumpAndSettle();
 
       // initial quantity shown
@@ -44,7 +44,7 @@ void main() {
       WidgetTester tester,
     ) async {
       // start with quantity 1, tapping - should remove the item
-      await tester.pumpWidget(MaterialApp(home: CartScreen(cart: cart)));
+      await tester.pumpWidget(MaterialApp(home: CartScreen()));
       await tester.pumpAndSettle();
 
       final Finder removeButton = find.byIcon(Icons.remove_circle_outline);
