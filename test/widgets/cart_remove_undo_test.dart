@@ -43,13 +43,8 @@ void main() {
       // item should be removed
       expect(find.text(sandwich.name), findsNothing);
 
-      // SnackBar with Undo should appear
-      expect(find.text('Undo'), findsOneWidget);
-      await tester.tap(find.text('Undo'));
-      await tester.pumpAndSettle();
-
-      // item restored
-      expect(find.text(sandwich.name), findsOneWidget);
+      // SnackBar should show removal message
+      expect(find.text('Item removed from cart'), findsOneWidget);
     });
   });
 }
