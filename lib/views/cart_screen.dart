@@ -6,6 +6,7 @@ import 'package:sandwich_shop/models/cart.dart';
 import 'package:sandwich_shop/models/sandwich.dart';
 import 'package:sandwich_shop/repositories/pricing_repository.dart';
 import 'package:sandwich_shop/views/checkout_screen.dart';
+import 'package:sandwich_shop/views/widgets/common_widgets.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -32,9 +33,7 @@ class _CartScreenState extends State<CartScreen> {
 
     final result = await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const CheckoutScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const CheckoutScreen()),
     );
 
     if (result != null && mounted) {
@@ -45,8 +44,9 @@ class _CartScreenState extends State<CartScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content:
-              Text('Order $orderId confirmed! Estimated time: $estimatedTime'),
+          content: Text(
+            'Order $orderId confirmed! Estimated time: $estimatedTime',
+          ),
           duration: const Duration(seconds: 4),
           backgroundColor: Colors.green,
         ),
@@ -75,9 +75,9 @@ class _CartScreenState extends State<CartScreen> {
   void _incrementQuantity(Sandwich sandwich) {
     final Cart cart = Provider.of<Cart>(context, listen: false);
     cart.add(sandwich, quantity: 1);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Quantity increased')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Quantity increased')));
   }
 
   void _decrementQuantity(Sandwich sandwich) {
@@ -85,57 +85,28 @@ class _CartScreenState extends State<CartScreen> {
     final wasPresent = cart.items.containsKey(sandwich);
     cart.remove(sandwich, quantity: 1);
     if (!cart.items.containsKey(sandwich) && wasPresent) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Item removed from cart')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Item removed from cart')));
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Quantity decreased')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Quantity decreased')));
     }
   }
 
   void _removeItem(Sandwich sandwich) {
     final Cart cart = Provider.of<Cart>(context, listen: false);
     cart.remove(sandwich, quantity: cart.getQuantity(sandwich));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Item removed from cart')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Item removed from cart')));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: SizedBox(
-            height: 100,
-            child: Image.asset('assets/images/logo.png'),
-          ),
-        ),
-        title: Text(
-          'Cart View',
-          style: heading1,
-        ),
-        actions: [
-          Consumer<Cart>(
-            builder: (context, cart, child) {
-              return Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.shopping_cart),
-                    const SizedBox(width: 4),
-                    Text('${cart.countOfItems}'),
-                  ],
-                ),
-              );
-            },
-          ),
-        ],
-      ),
+      appBar: AppBarWidget("Your Cart"),
       body: Center(
         child: SingleChildScrollView(
           child: Consumer<Cart>(
@@ -166,10 +137,7 @@ class _CartScreenState extends State<CartScreen> {
                                 icon: const Icon(Icons.remove),
                                 onPressed: () => _decrementQuantity(entry.key),
                               ),
-                              Text(
-                                'Qty: ${entry.value}',
-                                style: normalText,
-                              ),
+                              Text('Qty: ${entry.value}', style: normalText),
                               IconButton(
                                 icon: const Icon(Icons.add),
                                 onPressed: () => _incrementQuantity(entry.key),
