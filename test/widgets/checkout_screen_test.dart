@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
 import 'package:sandwich_shop/models/cart.dart';
 import 'package:sandwich_shop/models/sandwich.dart';
 import 'package:sandwich_shop/views/checkout_screen.dart';
@@ -26,8 +27,11 @@ void main() {
       Map? result;
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: TestHarness(cart: cart, onResult: (r) => result = r),
+        ChangeNotifierProvider<Cart>.value(
+          value: cart,
+          child: MaterialApp(
+            home: TestHarness(cart: cart, onResult: (r) => result = r),
+          ),
         ),
       );
 
@@ -85,9 +89,7 @@ class _TestHarnessState extends State<TestHarness> {
             ElevatedButton(
               onPressed: () async {
                 final res = await Navigator.of(context).push<Map>(
-                  MaterialPageRoute(
-                    builder: (_) => CheckoutScreen(),
-                  ),
+                  MaterialPageRoute(builder: (_) => CheckoutScreen()),
                 );
                 if (res != null) {
                   setState(() => _result = res);
