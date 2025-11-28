@@ -35,7 +35,7 @@ void main() {
       expect(find.textContaining('Qty:'), findsOneWidget);
 
       // tap + button
-      final Finder addButton = find.byIcon(Icons.add_circle_outline);
+      final Finder addButton = find.byIcon(Icons.add);
       expect(addButton, findsOneWidget);
       await tester.tap(addButton);
       await tester.pumpAndSettle();
@@ -58,7 +58,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final Finder removeButton = find.byIcon(Icons.remove_circle_outline);
+      final Finder removeButton = find.byIcon(Icons.remove);
       expect(removeButton, findsOneWidget);
       await tester.tap(removeButton);
       await tester.pumpAndSettle();

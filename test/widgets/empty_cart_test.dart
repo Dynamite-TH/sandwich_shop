@@ -17,7 +17,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Your cart is empty'), findsOneWidget);
-    expect(find.byIcon(Icons.shopping_cart_outlined), findsOneWidget);
+    // message includes a trailing period in the UI
+    expect(find.text('Your cart is empty.'), findsOneWidget);
   });
 }

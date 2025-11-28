@@ -35,7 +35,7 @@ void main() {
       expect(find.text(sandwich.name), findsOneWidget);
 
       // tap trash icon
-      final Finder trash = find.byIcon(Icons.delete_outline);
+      final Finder trash = find.byIcon(Icons.delete);
       expect(trash, findsOneWidget);
       await tester.tap(trash);
       await tester.pumpAndSettle();
